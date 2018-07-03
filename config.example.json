@@ -3,6 +3,9 @@
         "username": "",
         "password": ""
     },
+    "plugins": {
+        "ExamplePlugin": true
+    },
     "defaultServer": 1,
     "nickname": "ServerQueryBois"
 }
