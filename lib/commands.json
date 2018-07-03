@@ -130,7 +130,5 @@
     "tokenuse": "alias for privilegekeyuse",
     "use": "select virtual server",
     "version": "display version information",
-    "whoami": "display current session info",
-    "useserver": "",
-    "autosetup": "login using authentication in config.json, selects server and change nickname"
+    "whoami": "display current session info"
 }
