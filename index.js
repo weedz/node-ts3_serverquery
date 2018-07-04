@@ -2,7 +2,7 @@
 
 const config = require('./config.json');
 
-const Connection = require('./lib/Connection');
+const Connection = require('./lib/Connection')(config);
 
 const Client = require('./lib/Client')(Connection, config);
 

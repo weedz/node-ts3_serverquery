@@ -1,6 +1,9 @@
-module.exports = function(connection) {
-    console.log("Hello world!");
-    if (connection.connected()) {
+class ExamplePlugin {
+    constructor() {
+        this.connection = false;
+    }
+    connected(connection) {
+        this.connection = connection;
         Promise.all([
             connection.send('use', [1], {mustReturnOK: true, noOutput: true}),
             connection.send('whoami', undefined, {mustReturnOK: true, noOutput: true})
@@ -9,7 +12,10 @@ module.exports = function(connection) {
         }).catch(data => {
             console.log("ExamplePlugin catch: ", data);
         });
-    } else {
-        console.log('Not connected...');
+    }
+    setup() {
+        console.log("We in there bois!");
     }
 }
+
+module.exports = ExamplePlugin;
