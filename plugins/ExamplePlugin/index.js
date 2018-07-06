@@ -1,6 +1,9 @@
+const VERSION = 1;
+
 class ExamplePlugin {
     constructor() {
         this.connection = false;
+        this.fetchTimeout;
     }
     connected(connection) {
         this.connection = connection;
@@ -19,20 +22,27 @@ class ExamplePlugin {
 
         const connection = this.connection;
 
-        async function fetchClientInfo() {
+        const fetchClientInfo = async () => {
             const clientList = await connection.store.fetchList('clientlist');
             console.log(`Clients: ${clientList.length}`);
             for (let client of clientList) {
                 const data = await connection.store.fetchInfo('clientinfo', 'clid', client.clid);
                 console.log(`ExamplePlugin - client (${client.clid}): ${data.client_nickname}`);
             }
-            setTimeout(fetchClientInfo, 1000);
+            this.fetchTimeout = setTimeout(fetchClientInfo, 1000);
         }
-        setTimeout(fetchClientInfo, 1000);
+        this.fetchTimeout = setTimeout(fetchClientInfo, 1000);
     }
     reload() {
         console.log("ExamplePlugin - Already loaded!");
     }
+    unload() {
+        console.log("ExamplePlugin - Unloading...");
+        clearTimeout(this.fetchTimeout);
+    }
 }
 
-module.exports = ExamplePlugin;
+module.exports = {
+    plugin: ExamplePlugin,
+    VERSION
+};
