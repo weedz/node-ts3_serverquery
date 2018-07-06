@@ -15,15 +15,20 @@ class ExamplePlugin {
     }
     setup() {
         console.log("We in there bois!");
-        // get clientlist every 5 second
+        // get clientlist and info every 5 second
+
         const connection = this.connection;
-        function fetchClientList() {
-            connection.send('clientlist', undefined, {noOutput: true}, 2).then(data => {
-                console.log(`ExamplePlugin - clients: ${data.length}`);
-                setTimeout(fetchClientList, 5000);
-            });
+
+        async function fetchClientInfo() {
+            const clientList = await connection.store.fetchList('clientlist');
+            console.log(`Clients: ${clientList.length}`);
+            for (let client of clientList) {
+                const data = await connection.store.fetchInfo('clientinfo', 'clid', client.clid);
+                console.log(`ExamplePlugin - client (${client.clid}): ${data.client_nickname}`);
+            }
+            setTimeout(fetchClientInfo, 1000);
         }
-        setTimeout(fetchClientList, 5000);
+        setTimeout(fetchClientInfo, 1000);
     }
 }
 
