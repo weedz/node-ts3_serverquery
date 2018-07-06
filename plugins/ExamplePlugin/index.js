@@ -30,6 +30,9 @@ class ExamplePlugin {
         }
         setTimeout(fetchClientInfo, 1000);
     }
+    reload() {
+        console.log("ExamplePlugin - Already loaded!");
+    }
 }
 
 module.exports = ExamplePlugin;
