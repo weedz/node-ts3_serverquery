@@ -1,11 +1,12 @@
 "use strict";
 
 const config = require('./config.json');
+const Client = require('./lib/Client');
+const Connection = require('./lib/Connection');
 
-const Connection = require('./lib/Connection')(config);
+const connection = new Connection(config);
+const client = new Client(connection, config);
 
-const Client = require('./lib/Client')(Connection, config);
+const CLI = require('./lib/CLI')(client, connection, config);
 
-const CLI = require('./lib/CLI')(Client, config);
-
-Connection.init(CLI);
+connection.init(CLI);
