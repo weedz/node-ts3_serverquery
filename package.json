@@ -1,0 +1,23 @@
+{
+  "name": "ts3_bot",
+  "version": "1.0.0",
+  "description": "A TS3 ServerQuery interface written in JavaScript",
+  "main": "index.mjs",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "start": "node --experimental-modules index.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/weedz/node-ts3_serverquery.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/weedz/node-ts3_serverquery/issues"
+  },
+  "homepage": "https://github.com/weedz/node-ts3_serverquery#readme"
+}
