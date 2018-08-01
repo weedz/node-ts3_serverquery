@@ -7,7 +7,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "start": "node --experimental-modules index.mjs --setup"
+    "start": "node --experimental-modules index.mjs --init"
   },
   "repository": {
     "type": "git",

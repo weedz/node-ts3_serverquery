@@ -7,7 +7,7 @@
         "port": "10011"
     },
     "plugins": {
-        "ExamplePlugin": true
+        "CLI": true
     },
     "defaultServer": 1,
     "nickname": "ServerQueryBois"
