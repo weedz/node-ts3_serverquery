@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/weedz/node-ts3_serverquery/issues"
   },
-  "homepage": "https://github.com/weedz/node-ts3_serverquery#readme"
+  "homepage": "https://github.com/weedz/node-ts3_serverquery#readme",
+  "dependencies": {
+    "chalk": "^2.4.1"
+  }
 }

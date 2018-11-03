@@ -1,3 +1,5 @@
 /config.json*
 /plugins/*
+# CLI plugin is part of the main repository
 !/plugins/CLI/*
+/node_modules/
