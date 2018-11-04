@@ -107,7 +107,11 @@ export default class CLI extends Plugin {
 
     async handleLoginCommand(args) {
         if (args.length === 2) {
-            await this.client.login(args[0], args[1]);
+            try {
+                await this.client.login(args[0], args[1]);
+            } catch (error) {
+                console.warn("Invalid login");
+            }
         } else {
             console.warn("Needs 2 parameters: login <username> <password>");
         }
