@@ -92,33 +92,42 @@ export default class Client {
         }
         return plugins;
     }
-    reloadPlugins() {
+    async reloadPlugins() {
         for (let pluginName of Object.keys(this.config.plugins)) {
             if (this.config.plugins[pluginName] || (this.plugins[pluginName] && this.plugins[pluginName].loaded)) {
-                this.loadPlugin(pluginName);
+                try {
+                    await this.loadPlugin(pluginName);
+                } catch (err) {
+                    Log(`Plugin ${pluginName} not found!`, this.constructor.name, 1);
+                }
             } else {
                 delete this.plugins[pluginName];
             }
         }
     }
-    loadPlugin(pluginName: string) {
+    async loadPlugin(pluginName) {
         if (!this.plugins[pluginName] || !this.plugins[pluginName].plugin) {
             const pluginPath = path.join(pluginsPath, pluginName);
-            fs.promises.access(pluginPath).then(() => {
-                this.initPlugin(pluginName);
-            }).catch(() => {
-                Log(`Plugin ${pluginName} not found!`, this.constructor.name, 1);
-            });
+            if (fs.existsSync(pluginPath)) {
+                await this.initPlugin(pluginName, pluginPath);
+            } else {
+                throw new Error("PLUGIN_NOT_FOUND");
+            };
         } else {
-            this.notify(this.plugins[pluginName], 'reload').then(() => {
-                Log(`Plugin ${pluginName} reloaded!`, this.constructor.name, 4);
-            }).catch(err => {
-                Log(`Error reloading plugin ${pluginName}: ${err}`, this.constructor.name, 1);
-            });
+            console.log(pluginName + " already loaded");
+            // this.notify(this.plugins[pluginName], 'reload').then(() => {
+            //     Log(`Plugin ${pluginName} reloaded!`, this.constructor.name, 4);
+            // }).catch(err => {
+            //     Log(`Error reloading plugin ${pluginName}: ${err}`, this.constructor.name, 1);
+            // });
         }
     }
-    initPlugin(pluginName: string) {
-        import(path.resolve(pluginsPath, pluginName)).then(plugin => {
+
+    async initPlugin(pluginName: string, pluginPath: string) {
+        await import(path.resolve(pluginsPath, pluginName)).then(async plugin => {
+            const deps = await this.pluginBuildDependencyList(pluginPath);
+            console.log("Dependencies: ", deps);
+
             this.plugins[pluginName] = {
                 plugin: new plugin.default(this.connection, this),
                 version: plugin.VERSION,
@@ -134,7 +143,40 @@ export default class Client {
             }
             Log(`Plugin ${chalk.green(pluginName)} [${this.plugins[pluginName].version}] loaded`, this.constructor.name);
         }).catch(err => {
-            Log(`Error loading plugin ${pluginName}: ${err}`, this.constructor.name, 1);
+            Log(`Error loading plugin ${pluginName}: ${err.code} (${err.data})`, this.constructor.name, 1);
+        });
+    }
+    async pluginBuildDependencyList(pluginPath: string) {
+        const deps = {};
+        return new Promise( (resolve, reject) => {
+            import(path.resolve(pluginPath, "plugin.json")).then(async pluginJSON => {
+                if (typeof pluginJSON.dependencies === "object") {
+                    const dependencies = pluginJSON.dependencies
+                    for (let dep of Object.keys(dependencies)) {
+                        deps[dep] = typeof dependencies[dep] === "object" ? {
+                            ...dependencies[dep]
+                        } : {
+                            version: dependencies[dep],
+                            optional: false
+                        };
+                        try {
+                            if (typeof this.config.plugins[dep] === "boolean" && !this.config.plugins[dep]) {
+                                reject({code: "DEPENDENCY_DISABLED", data: dep});
+                            } else {
+                                deps[dep].plugin = await import(path.resolve(pluginsPath, dep));
+                            }
+                        } catch (err) {
+                            if (!deps[dep].optional) {
+                                reject({code: "DEPENDENCY_NOT_FOUND", data: dep});
+                            }
+                        }
+                    }
+                }
+                resolve(deps);
+            }).catch(err => {
+                console.log(`Error in ${pluginPath}`, err);
+                reject(err);
+            });
         });
     }
     unloadPlugin(pluginName: string) {

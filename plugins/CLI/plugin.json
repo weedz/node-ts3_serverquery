@@ -1,0 +1,9 @@
+{
+    "name": "CLI",
+    "version": "1.0.0",
+    "dependencies": {
+        "ExamplePlugin": {
+            "version": "^1.0.0"
+        }
+    }
+}
