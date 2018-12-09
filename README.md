@@ -3,7 +3,7 @@
 A TS3 ServerQuery interface written in JavaScript.
 
 ## Setup/Requirements
-Requires Node.js version 10.6+
+TypeScript v3.2+ and Node.js v10.6+.
 
 Start using `npm start`
 

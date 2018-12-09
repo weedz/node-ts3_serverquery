@@ -1,5 +1,5 @@
-import chalk from 'chalk';
-import config from '../config.json';
+import chalk from "chalk";
+import * as config from "../config.json";
 
 const logLevelMap = {
     0: chalk.red.bold.underline,
@@ -10,9 +10,9 @@ const logLevelMap = {
 };
 
 /**
- * @param {integer} level - Log level, 0=critical,1=error, 2=warn, 3=info, 4=debug 5=ALL debug
+ * @param {number} level - Log level, 0=critical,1=error, 2=warn, 3=info, 4=debug 5=ALL debug
  */
-export default function Log(str, identifier, level = 3) {
+export default function Log(str: string, identifier: string, level: number = 3) {
     if (config.logLevel < level) {
         return;
     }

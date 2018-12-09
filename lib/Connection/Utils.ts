@@ -1,7 +1,8 @@
 /**
- * @param args Do not send a string, use a JSON structure
+ * @param {string} cmd command.
+ * @param {object} args Do not send a string, use a JSON structure
  */
-export function parseArgsToString(cmd, args) {
+export function parseArgsToString(cmd: string, args: object) {
     let str = cmd;
     if (typeof args === 'object') {
         str += " " + parseArgsFromObject(args);
@@ -9,11 +10,11 @@ export function parseArgsToString(cmd, args) {
     return str;
 }
 
-function parseArgsFromArray(args) {
+function parseArgsFromArray(args: string[]) {
     return args.join(" ");
 }
 
-function parseArgsFromJSON(args) {
+function parseArgsFromJSON(args: object) {
     let str = "";
     for (let key of Object.keys(args)) {
         str += ` ${key}=${escapeToTS(args[key])}`;
@@ -21,14 +22,14 @@ function parseArgsFromJSON(args) {
     return str;
 }
 
-function parseArgsFromObject(args) {
+function parseArgsFromObject(args: object) {
     return Array.isArray(args) ?
         parseArgsFromArray(args) :
         parseArgsFromJSON(args);
 }
 
-export function parseParams(msg, type, start = 0) {
-    let params = false;
+export function parseParams(msg: string, type: number, start = 0): object | boolean {
+    let params: object | boolean = false;
     if (type === 2) {
         params = parseParamsList(msg);
     } else if (type !== 0) {
@@ -37,11 +38,11 @@ export function parseParams(msg, type, start = 0) {
     return params;
 }
 
-function parseParamsList(msg) {
+function parseParamsList(msg: string) {
     return msg.split("|").map(item => parseParams(item, 1));
 }
 
-function parseParamsElement(msg, start) {
+function parseParamsElement(msg: string, start: number) {
     const params = {};
     for (let param of msg.substr(start).trim().split(" ")) {
         const divider = param.indexOf("=");
@@ -52,7 +53,7 @@ function parseParamsElement(msg, start) {
     return params;
 }
 
-export function escapeToTS(value) {
+export function escapeToTS(value: string | number) {
     if (typeof value === "string") {
         return value
             .replace(/\\/g, "\\\\")
@@ -65,12 +66,12 @@ export function escapeToTS(value) {
             .replace(/\n/g, "\\n")
             .replace(/\r/g, "\\r")
             .replace(/\t/g, "\\t")
-            .replace(/\v/g, "\\v")
+            .replace(/\v/g, "\\v");
     }
     return value;
 }
 
-export function escapeFromTS(value) {
+export function escapeFromTS(value: string | number) {
     if (typeof value === "string") {
         return value
             .replace(/\\\//g, "/")

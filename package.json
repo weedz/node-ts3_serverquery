@@ -2,12 +2,12 @@
   "name": "ts3_bot",
   "version": "1.0.0",
   "description": "A TS3 ServerQuery interface written in JavaScript",
-  "main": "index.mjs",
+  "main": "index.ts",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
-    "start": "node --experimental-modules index.mjs --init"
+    "start": "ts-node index.ts --init"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,8 @@
   },
   "homepage": "https://github.com/weedz/node-ts3_serverquery#readme",
   "dependencies": {
+    "@types/node": "^10.12.12",
     "chalk": "^2.4.1"
-  }
+  },
+  "devDependencies": {}
 }
