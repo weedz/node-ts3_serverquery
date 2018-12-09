@@ -144,11 +144,11 @@ export default class DataStore {
         }
     }
     forceListUpdate(list: string, key: string, id: string | number, args: object) {
-        if (this.store[list]) {
+        if (this.storeList[list]) {
             for (let i = 0, len = this.storeList[list].length(); i < len; i++) {
-                if (this.store[list][i][key] === id) {
-                    this.store[list][i][key].data = {
-                        ...this.store[list][i][id].data,
+                if (this.storeList[list][i][key] === id) {
+                    this.storeList[list][i][key].data = {
+                        ...this.storeList[list][i][id].data,
                         ...args
                     };
                     break;
