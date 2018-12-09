@@ -1,4 +1,4 @@
-{
+const VALID_EVENTS = {
     "error": {
         "error": 1
     },
@@ -24,3 +24,4 @@
         "notifytextmessage": 1
     }
 }
+export default VALID_EVENTS;

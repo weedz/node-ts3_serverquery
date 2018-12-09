@@ -1,43 +1,56 @@
+/// <reference path="Connection/Types.d.ts" />
 import {
-    createConnection
-} from 'net';
-import chalk from 'chalk';
-import DataStore from './Connection/DataStore';
-import CommandQueue from './Connection/CommandQueue';
-import VALID_EVENTS from './Connection/valid_events.json';
-import VALID_HOOKS from './Connection/valid_hooks.json';
+    createConnection, Socket
+} from "net";
+import chalk from "chalk";
+import DataStore from "./Connection/DataStore";
+import CommandQueue from "./Connection/CommandQueue";
+import VALID_EVENTS from "./Connection/valid_events";
+import VALID_HOOKS from "./Connection/valid_hooks";
 import {
     parseArgsToString,
     parseParams
-} from './Connection/Utils';
-import Log from './Log.mjs';
+} from "./Connection/Utils";
+import Log from "./Log";
+import { Command } from "./Connection/Command";
+import { CommandOptions } from "./Connection/CommandOptions";
 
 // constants
-const STATE = {
-    CLOSED: 0,
-    READY: 1,
-    AWAITING_DATA: 2,
-    PROCESSING_DATA: 3,
-    INIT: 4
+enum STATE {
+    CLOSED = 0,
+    READY = 1,
+    AWAITING_DATA = 2,
+    PROCESSING_DATA = 3,
+    INIT = 4
 };
 
 /*
 1: Single item response
 2: Array/list response, items seperated by "|"
 */
-const SHOULD_PARSE_PARAMS = {
-    error: 1,
-    serverinfo: 1,
-    serverlist: 2,
-    clientinfo: 1,
-    clientlist: 2,
-    channelinfo: 1,
-    channellist: 2,
-    logview: 2,
+enum SHOULD_PARSE_PARAMS {
+    error = 1,
+    serverinfo = 1,
+    serverlist = 2,
+    clientinfo = 1,
+    clientlist = 2,
+    channelinfo = 1,
+    channellist = 2,
+    logview = 2,
 };
 
 export default class Connection {
-    constructor(config) {
+    state: STATE;
+    registeredHooks: { [event: string]: {} };
+    REGISTERED_EVENTS: object;
+    store: DataStore;
+    commandQueue: CommandQueue;
+    commandResult: boolean | object;
+    buffer: string;
+    pingTimer: null | NodeJS.Timeout;
+    connection: Socket;
+
+    constructor(config: any) {
         this.state = STATE.CLOSED;
         this.registeredHooks = {};
         this.REGISTERED_EVENTS = {};
@@ -63,19 +76,19 @@ export default class Connection {
         this.connection = this.init(config);
     }
 
-    connected() {
+    connected() : boolean {
         return this.state !== STATE.CLOSED;
     }
-    connecting() {
+    connecting() : boolean {
         return this.connection.connecting;
     }
-    ready() {
+    ready() : boolean {
         return this.state === STATE.READY;
     }
 
-    init(config) {
+    init(config) : Socket {
         Log(`Connecting to ${config.auth.host}:${config.auth.port}`, this.constructor.name, 3);
-        return new createConnection({
+        return createConnection({
                 port: config.auth.port,
                 host: config.auth.host
             }, this.connectionCallback)
@@ -98,13 +111,13 @@ export default class Connection {
 
     async heartbeat() {
         Log("Sending heartbeat...", this.constructor.name, 4);
-        const startTime = process.hrtime.bigint();
+        const startTime = process.hrtime();
         await this.send('version', undefined, {
             noOutput: true
         }, 0);
-        const diff = process.hrtime.bigint() - startTime;
-        const ping = Number(diff / BigInt(1000));
-        Log(`Ping: ${ping / 1000}ms`, this.constructor.name, 5);
+        const diff = process.hrtime(startTime);
+        const ping = diff[0] > 0 ? diff[0] / 1e6 : 0 + diff[1] / 1e6;
+        Log(`Ping: ${ping}ms`, this.constructor.name, 5);
     }
 
     errorHook(params) {
@@ -119,7 +132,7 @@ export default class Connection {
         }
     }
 
-    onError(e) {
+    onError(e: Error) {
         Log(`ERROR: ${e}`, this.constructor.name, 1);
     }
 
@@ -131,12 +144,12 @@ export default class Connection {
         Log(`event:timeout ${JSON.stringify(arguments)}`, this.constructor.name, 5);
     }
 
-    onClose(hadError) {
+    onClose(hadError: boolean) {
         this.state = STATE.CLOSED;
         Log("Closing connection...", this.constructor.name, hadError ? 1 : 3);
         clearInterval(this.pingTimer);
     }
-    onData(data) {
+    onData(data: Buffer) {
         const msg = data.toString('utf8');
 
         if (this.state === STATE.INIT) {
@@ -149,7 +162,7 @@ export default class Connection {
             this.commandQueue.processQueue();
         }
     }
-    processData(msg) {
+    processData(msg: string) {
         this.state = STATE.PROCESSING_DATA;
 
         // Weird stuff happened, making sure this is the last "packet" for this event/msg
@@ -163,7 +176,7 @@ export default class Connection {
         }
     }
 
-    recievedData(msg) {
+    recievedData(msg: string) {
         if (this.getCommand().label === 'help') {
             process.stdout.write(msg);
         } else {
@@ -173,7 +186,7 @@ export default class Connection {
         this.state = STATE.READY;
     }
 
-    parseRecievedData(msg) {
+    parseRecievedData(msg: string) {
         for (let line of msg.split("\n\r")) {
             line = line.trim();
             if (!line) {
@@ -184,7 +197,7 @@ export default class Connection {
         }
     }
 
-    handleRecievedLine(line, event) {
+    handleRecievedLine(line: string, event: string) {
         const params = VALID_HOOKS[event] ?
             parseParams(line, 1, event.length + 1) :
             parseParams(line, SHOULD_PARSE_PARAMS[this.getCommand().label]);
@@ -196,10 +209,10 @@ export default class Connection {
         }
     }
 
-    recievedEvent(params, event, msg) {
+    recievedEvent(params: any, event: string, msg: string) {
         if (this.registeredHooks[event]) {
             for (let pluginHooks of Object.values(this.registeredHooks[event])) {
-                for (let callback of pluginHooks) {
+                for (let callback of Object.values(pluginHooks)) {
                     callback(params, msg);
                 }
             }
@@ -208,7 +221,8 @@ export default class Connection {
 
     retryCommand() {
         const command = this.getCommand();
-        this.commandQueue.add(command.labe, command.options, 0, command.command, command.resolve, command.reject);
+
+        this.commandQueue.add(command, 0);
     }
 
     skipCommand() {
@@ -225,24 +239,24 @@ export default class Connection {
         this.commandQueue.clearQueue(0);
     }
 
-    getCommandQueue() {
+    getCommandQueue(): CommandQueue {
         return this.commandQueue;
     }
 
-    getCommand() {
+    getCommand(): Command {
         return this.commandQueue.getCommand();
     }
 
-    writeRaw(str) {
+    writeRaw(data: string) {
         this.commandResult = false;
         this.state = STATE.AWAITING_DATA;
         let logLevel = this.getCommand().options.noOutput ? 5 : 3;
-        Log(`writeRaw(): ${str.replace("\r\n", "\\r\\n")}`, this.constructor.name, logLevel);
-        this.connection.write(Buffer.from(str, 'utf8'));
+        Log(`writeRaw(): ${data.replace("\r\n", "\\r\\n")}`, this.constructor.name, logLevel);
+        this.connection.write(Buffer.from(data, 'utf8'));
     }
 
-    writeToConnection(str) {
-        this.writeRaw(str + "\r\n");
+    writeToConnection(data: string) {
+        this.writeRaw(data + "\r\n");
     }
 
     /**
@@ -251,19 +265,27 @@ export default class Connection {
      * @param options Options..
      * @param priority 0=highest, 2=lowest
      */
-    send(cmd, args, options, priority = 0) {
+    send(cmd: string, args: object | string[], options: CommandOptions = {}, priority: number = 0) {
         if (!cmd) {
             return;
         }
         return new Promise((resolve, reject) => {
             let commandStr = parseArgsToString(cmd, args);
-            this.commandQueue.add(cmd, commandStr, options, priority, () => {
-                this.writeToConnection(commandStr);
-            }, resolve, reject);
+            const command: Command = {
+                label: cmd,
+                command: () => {
+                    this.writeToConnection(commandStr);
+                },
+                commandStr,
+                options,
+                resolve,
+                reject
+            };
+            this.commandQueue.add(command, priority);
         });
     }
 
-    registerHook(event, callbacks, id = "connection") {
+    registerHook(event: string, callbacks: {[hook: string]: Function}, id: string = "connection") {
         for (let hook of Object.keys(callbacks)) {
             if (VALID_EVENTS[event][hook]) {
                 this._pushHook(hook, id, callbacks[hook]);
@@ -274,7 +296,7 @@ export default class Connection {
         }
         return true;
     }
-    _pushHook(hook, id, callback) {
+    _pushHook(hook: string, id: string, callback: Function) {
         if (this.registeredHooks[hook] === undefined) {
             this.registeredHooks[hook] = {};
         }
@@ -284,7 +306,7 @@ export default class Connection {
         this.registeredHooks[hook][id].push(callback);
     }
 
-    registerEvent(event, options, callbacks, id) {
+    registerEvent(event: string, options: object, callbacks: {[hook: string]: Function}, id: string) {
         if (VALID_EVENTS[event]) {
             if (this.registerHook(event, callbacks, id)) {
                 if (!this.REGISTERED_EVENTS[event]) {
@@ -298,7 +320,7 @@ export default class Connection {
         }
     }
 
-    unregisterHook(event, hook, id) {
+    unregisterHook(event: string, hook: string, id: string) {
         if (
             VALID_EVENTS[event][hook] &&
             this.registeredHooks[hook] &&
@@ -310,7 +332,7 @@ export default class Connection {
             }
         }
     }
-    unregisterEvent(event, hooks, id) {
+    unregisterEvent(event: string, hooks: string[], id: string) {
         if (VALID_EVENTS[event]) {
             for (let hook of hooks) {
                 this.unregisterHook(event, hook, id);

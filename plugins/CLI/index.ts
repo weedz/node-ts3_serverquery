@@ -1,10 +1,22 @@
 import Plugin from '../../lib/Plugin';
-import { createInterface } from 'readline';
-import commands from './commands.json';
+import { createInterface, Interface } from 'readline';
+import * as commands from './commands.json';
+
+type CommandParam = {
+    key: string;
+    value: string;
+}
+
+type Command = {
+    description: string;
+    params?: CommandParam[]
+}
 
 export const VERSION = 1;
 
 export default class CLI extends Plugin {
+    commands: object;
+    rl: Interface;
     constructor() {
         super({});
         this.commands = {};
@@ -52,22 +64,22 @@ export default class CLI extends Plugin {
         .on('line', this.onLine);
     }
 
-    handleAutoCompletion(line) {
-        line = line.split(" ");
+    handleAutoCompletion(line: string) {
+        const words = line.split(" ");
         const completions = this.connection.connected()
             ? Object.keys(commands).concat(Object.keys(this.commands))
             : [];
-        const hits = completions.filter(c => c.startsWith(line[0]));
+        const hits = completions.filter(c => c.startsWith(words[0]));
 
-        if (commands[line[0]]) {
-            this.autoCompleteCommand(commands[line[0]]);
+        if (commands && commands[words[0]]) {
+            this.autoCompleteCommand(commands[words[0]]);
         }
 
         // show all completions if none found
-        return [hits.length ? hits : completions, line[0]];
+        return [hits.length ? hits : completions, words[0]];
     }
 
-    autoCompleteCommand(cmd) {
+    autoCompleteCommand(cmd: Command) {
         process.stdout.write(`\nDescription: ${cmd.description}\n`);
         if (cmd.params) {
             process.stdout.write(`Params:\n`);
@@ -78,7 +90,7 @@ export default class CLI extends Plugin {
         }
     }
 
-    async onLine(line) {
+    async onLine(line: string) {
         const [cmd, ...args] = line.trim().split(" ");
         if (!this.connection.connected()) {
             const status = this.connection.connecting() ? "Connecting" : "Disconnected";
@@ -97,7 +109,7 @@ export default class CLI extends Plugin {
         this.rl.prompt();
     }
 
-    async handleHelpCommand(args) {
+    async handleHelpCommand(args: string[]) {
         if (args.length === 1) {
             await this.client.showHelp(args[0]);
         } else {
@@ -105,7 +117,7 @@ export default class CLI extends Plugin {
         }
     }
 
-    async handleLoginCommand(args) {
+    async handleLoginCommand(args: string[]) {
         if (args.length === 2) {
             try {
                 await this.client.login(args[0], args[1]);
@@ -117,7 +129,7 @@ export default class CLI extends Plugin {
         }
     }
 
-    async sendCommand(cmd, args) {
+    async sendCommand(cmd: string, args?: string[]) {
         try {
             const param = await this.connection.send(cmd, args);
             console.log("Result:", param);
@@ -126,16 +138,16 @@ export default class CLI extends Plugin {
         }
     }
 
-    registerCommand(cmd, callback) {
+    registerCommand(cmd: string, callback: Function) {
         if (!this.isCommand(cmd)) {
             this.commands[cmd] = callback;
         }
     }
-    isCommand(cmd) {
+    isCommand(cmd: string) {
         return this.commands[cmd] !== undefined;
     }
 
-    executeCommand(cmd, args) {
+    executeCommand(cmd: string, args: any) {
         if (this.isCommand(cmd)) {
             return this.commands[cmd](...args);
         }

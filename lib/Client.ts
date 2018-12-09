@@ -1,11 +1,26 @@
-import path from 'path';
-import fs from 'fs';
-import chalk from 'chalk';
-import Log from './Log.mjs';
+import * as path from "path";
+import * as fs from "fs";
+import chalk from "chalk";
+import Log from "./Log";
+import Connection from "./Connection";
+import Plugin from "./Plugin";
+
 const pluginsPath = path.resolve('./plugins');
 
+type PluginObject = {
+    plugin: Plugin;
+    loaded?: boolean;
+    version?: string | number;
+};
+
 export default class Client {
-    constructor(connection, config) {
+    connection: Connection;
+    plugins: {[pluginName: string]: PluginObject};
+    config: any;
+    commands: object;
+    inited: boolean;
+
+    constructor(connection: Connection, config: any) {
         this.connection = connection;
         this.connection.connection.on('connect', () => {
             this.broadcast('connected');
@@ -21,15 +36,26 @@ export default class Client {
         this.reloadPlugins();
     }
     // Handle plugins
-    broadcast(event, params) {
+    broadcast(event: string, params?: any) {
         for (let plugin of Object.values(this.plugins).filter(plugin => plugin.loaded)) {
             this.notify(plugin, event, params);
         }
     }
-    notify(plugin, event, params) {
-        if (typeof plugin.class[event] === 'function') {
-            plugin.class[event](params);
-        }
+    notify(plugin: PluginObject, event: string, params?: any) {
+        return new Promise( (resolve, reject) => {
+            let result = true;
+            if (typeof plugin.plugin[event] === "function") {
+                const pluginResponse = plugin.plugin[event](params);
+                if (pluginResponse !== undefined) {
+                    result = pluginResponse;
+                }
+            }
+            if (result) {
+                resolve();
+            } else {
+                reject(result);
+            }
+        })
     }
     getPluginsStatus() {
         const plugins = {};
@@ -48,40 +74,41 @@ export default class Client {
             if (this.config.plugins[pluginName] || (this.plugins[pluginName] && this.plugins[pluginName].loaded)) {
                 this.loadPlugin(pluginName);
             } else {
-                this.plugins[pluginName] = {
-                    loaded: false
-                };
+                delete this.plugins[pluginName];
             }
         }
     }
-    loadPlugin(pluginName) {
-        if (!this.plugins[pluginName] || !this.plugins[pluginName].class) {
+    loadPlugin(pluginName: string) {
+        if (!this.plugins[pluginName] || !this.plugins[pluginName].plugin) {
             const pluginPath = path.join(pluginsPath, pluginName);
             fs.promises.access(pluginPath).then(() => {
-                this.initPlugin(pluginName, pluginPath);
+                this.initPlugin(pluginName);
             }).catch(() => {
                 Log(`Plugin ${pluginName} not found!`, this.constructor.name, 1);
             });
         } else {
-            this.notify(this.plugins[pluginName], 'reload');
+            this.notify(this.plugins[pluginName], 'reload').then(() => {
+                Log(`Plugin ${pluginName} reloaded!`, this.constructor.name, 4);
+            }).catch(err => {
+                Log(`Error reloading plugin ${pluginName}: ${err}`, this.constructor.name, 1);
+            });
         }
     }
-    initPlugin(pluginName, pluginPath) {
-        const url = new URL('file://');
-        url.pathname = `${pluginPath}/index.mjs`;
-        import(url.href).then(plugin => {
+    initPlugin(pluginName: string) {
+        import(path.resolve(pluginsPath, pluginName)).then(plugin => {
             this.plugins[pluginName] = {
-                class: new plugin.default(),
+                plugin: new plugin.default(),
                 version: plugin.VERSION,
                 loaded: true
             };
-            this.plugins[pluginName].class.load(this.connection, this);
+            this.plugins[pluginName].plugin.load(this.connection, this);
             this.config.plugins[pluginName] = true;
             if (this.connection.connected()) {
-                this.notify(this.plugins[pluginName], 'connected', this.connection);
-                if (this.inited) {
-                    this.notify(this.plugins[pluginName], 'init');
-                }
+                this.notify(this.plugins[pluginName], 'connected', this.connection).then(() => {
+                    if (this.inited) {
+                        this.notify(this.plugins[pluginName], 'init');
+                    }
+                });
             }
             Log(`Plugin ${chalk.green(pluginName)} [${this.plugins[pluginName].version}] loaded`, this.constructor.name);
         }).catch(err => {
@@ -90,9 +117,9 @@ export default class Client {
     }
     unloadPlugin(pluginName) {
         if (this.plugins[pluginName]) {
-            this.notify(this.plugins[pluginName], 'unload');
-            this.plugins[pluginName].class = false;
-            this.plugins[pluginName].loaded = false;
+            this.notify(this.plugins[pluginName], 'unload').then(() => {
+                delete this.plugins[pluginName];
+            });
         } else {
             Log(`Plugin ${pluginName} not loaded`, this.constructor.name, 1);
         }
@@ -111,11 +138,11 @@ export default class Client {
 
     }
 
-    showHelp(cmd) {
-        return this.connection.send('help', cmd);
+    showHelp(cmd?: string) {
+        return this.connection.send('help', [cmd]);
     }
 
-    login(username, password) {
+    login(username: string, password: string) {
         return this.connection.send('login', { client_login_name: username, client_login_password: password }, {
             noOutput: true
         });

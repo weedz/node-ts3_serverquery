@@ -1,19 +1,42 @@
 import Log from '../Log';
+import Connection from '../Connection';
 
 const CACHE_EXPIRE = {
-    "clientlist": 30000,
-    "clientinfo": 30000,
-    "channellist": 30000,
-    "channelinfo": 30000
+    clientlist: 30000,
+    clientinfo: 30000,
+    channellist: 30000,
+    channelinfo: 30000
+};
+
+class Cache {
+    data: object;
+    expire: number;
+    queue: object[];
+    fetching?: boolean;
+
+    length(): number {
+        return this.queue.length;
+    }
 };
 
 export default class DataStore {
-    constructor(connection) {
+    connection: Connection;
+    store: {
+        [listName: string]: {
+            [cacheId: string] : Cache
+        }
+    };
+    storeList: {
+        [cacheId: string] : Cache
+    };
+
+    constructor(connection: Connection) {
         this.connection = connection;
         this.store = {};
+        this.storeList = {};
     }
 
-    getCacheTime(cache, default_expire, noCache) {
+    getCacheTime(cache: Cache, default_expire: number, noCache: boolean): number {
         if (!cache.expire) {
             return 0;
         }
@@ -24,20 +47,19 @@ export default class DataStore {
         return cacheAge;
     }
 
-    updateCache(cache, default_expire, noCache) {
+    updateCache(cache: Cache, default_expire: number, noCache: boolean) {
         return !cache || this.getCacheTime(cache, default_expire, noCache) < Date.now();
     }
 
-    pushToCacheQueue(cache, item) {
+    pushToCacheQueue(cache: Cache, item: any) {
         if (!cache.queue) {
             cache.queue = [];
         }
         cache.queue.push(item);
     }
 
-    async request(cache, list, params) {
+    async request(cache: Cache, list: string, params: object) {
         const data = await this.connection.send(list, params, {
-            noOutput: true,
             expectData: true
         }, 1);
         cache.data = data;
@@ -52,7 +74,7 @@ export default class DataStore {
         }
     }
 
-    rejectRequest(err, cache) {
+    rejectRequest(err: string, cache: Cache) {
         if (cache.queue && cache.queue.length) {
             let item;
             while (item = cache.queue.shift()) {
@@ -63,7 +85,7 @@ export default class DataStore {
         }
     }
 
-    async handleFetch(cache, list, params, resolve, reject) {
+    async handleFetch(cache: Cache, list: string, params: object, resolve: Function, reject: Function) {
         this.pushToCacheQueue(cache, {
             resolve,
             reject
@@ -79,22 +101,21 @@ export default class DataStore {
         }
     }
 
-    fetchList(list, noCache = false) {
-        if (!this.store[list]) {
-            this.store[list] = {};
+    fetchList(list: string, noCache = false) {
+        if (!this.storeList[list]) {
+            this.storeList[list] = new Cache();
         }
-        const cache = this.store[list];
+        const cache = this.storeList[list];
 
-        const result = this.fetchPromise(cache, list, noCache);
-        return result;
+        return <Promise<any[]>>this.fetchPromise(cache, list, noCache);
     }
 
-    fetchInfo(list, keyName, keyValue, noCache = false) {
+    fetchInfo(list: string, keyName: string, keyValue: string | number, noCache = false): Promise<any> {
         if (!this.store[list]) {
             this.store[list] = {};
         }
         if (!this.store[list][keyValue]) {
-            this.store[list][keyValue] = {};
+            this.store[list][keyValue] = new Cache();
         }
         const cache = this.store[list][keyValue];
         return this.fetchPromise(cache, list, noCache, {
@@ -102,7 +123,7 @@ export default class DataStore {
         });
     }
 
-    fetchPromise(cache, list, noCache, params = {}) {
+    fetchPromise(cache: Cache, list: string, noCache: boolean, params = {}) {
         return new Promise((resolve, reject) => {
             if (this.updateCache(cache, CACHE_EXPIRE[list], noCache)) {
                 Log(`Fetching resource ${list} ${Object.entries(params)}`, this.constructor.name, 4);
@@ -114,20 +135,20 @@ export default class DataStore {
         });
     }
 
-    forceInfoUpdate(list, id, args) {
+    forceInfoUpdate(list: string, id: string | number, args: object) {
         if (this.store[list] && this.store[list][id]) {
-            this.store[list][id] = {
-                ...this.store[list][id],
+            this.store[list][id].data = {
+                ...this.store[list][id].data,
                 ...args
             };
         }
     }
-    forceListUpdate(list, key, id, args) {
+    forceListUpdate(list: string, key: string, id: string | number, args: object) {
         if (this.store[list]) {
-            for (let i = 0, len = this.store[list].length; i < len; i++) {
+            for (let i = 0, len = this.storeList[list].length(); i < len; i++) {
                 if (this.store[list][i][key] === id) {
-                    this.store[list][i][key] = {
-                        ...this.store[list][i][id],
+                    this.store[list][i][key].data = {
+                        ...this.store[list][i][id].data,
                         ...args
                     };
                     break;

@@ -1,4 +1,7 @@
+import { Command } from "./Command";
+
 export default class Queue {
+    queue: Command[];
     constructor() {
         this.queue = [];
     }
@@ -7,17 +10,12 @@ export default class Queue {
         return this.queue.length === 0;
     }
 
-    add(label, commandStr, command, resolve, reject, options) {
-        this.queue.push({
-            label,
-            command,
-            commandStr,
-            resolve,
-            reject,
-            options: {
-                ...options
-            }
-        });
+    add(command: Command) {
+        this.queue.push(command);
+    }
+
+    length() {
+        return this.queue.length;
     }
 
     shift() {
