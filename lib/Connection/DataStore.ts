@@ -48,7 +48,7 @@ export default class DataStore {
     }
 
     updateCache(cache: Cache, default_expire: number, noCache: boolean) {
-        return !cache || this.getCacheTime(cache, default_expire, noCache) < Date.now();
+        return !cache.data || this.getCacheTime(cache, default_expire, noCache) < Date.now();
     }
 
     pushToCacheQueue(cache: Cache, item: any) {
