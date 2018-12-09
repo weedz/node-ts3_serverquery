@@ -28,7 +28,7 @@ export default class Plugin {
         url.pathname = configFile;
         if (fs.existsSync(url)) {
             try {
-                const newConfig = await import(url.pathname);
+                const newConfig = await import(configFile);
                 if (newConfig) {
                     this.config = {
                         ...this.config,
