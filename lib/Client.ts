@@ -1,3 +1,4 @@
+/// <reference path="../config.d.ts" />
 import * as path from "path";
 import * as fs from "fs";
 import chalk from "chalk";
@@ -16,11 +17,11 @@ type PluginObject = {
 export default class Client {
     connection: Connection;
     plugins: {[pluginName: string]: PluginObject};
-    config: any;
+    config: BotConfig;
     commands: object;
     inited: boolean;
 
-    constructor(connection: Connection, config: any) {
+    constructor(connection: Connection, config: BotConfig) {
         this.connection = connection;
         this.connection.connection.on('connect', () => {
             this.broadcast('connected');

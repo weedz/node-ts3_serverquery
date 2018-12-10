@@ -2,7 +2,7 @@ declare type AuthOptions = {
     username: string;
     password: string;
     host: string;
-    port: string;
+    port: number;
 };
 
 declare type BotConfig = {

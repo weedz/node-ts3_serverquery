@@ -1,3 +1,4 @@
+/// <reference path="../config.d.ts" />
 /// <reference path="Connection/Types.d.ts" />
 import {
     createConnection, Socket
@@ -50,7 +51,7 @@ export default class Connection {
     pingTimer: null | NodeJS.Timeout;
     connection: Socket;
 
-    constructor(config: any) {
+    constructor(config: BotConfig) {
         this.state = STATE.CLOSED;
         this.registeredHooks = {};
         this.REGISTERED_EVENTS = {};
@@ -86,7 +87,7 @@ export default class Connection {
         return this.state === STATE.READY;
     }
 
-    init(config) : Socket {
+    init(config: BotConfig) : Socket {
         Log(`Connecting to ${config.auth.host}:${config.auth.port}`, this.constructor.name, 3);
         return createConnection({
                 port: config.auth.port,
