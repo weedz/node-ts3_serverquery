@@ -46,9 +46,13 @@ function parseParamsElement(msg: string, start: number) {
     const params = {};
     for (let param of msg.substr(start).trim().split(" ")) {
         const divider = param.indexOf("=");
-        const key = param.substr(0, divider);
-        const value = escapeFromTS(param.substr(divider + 1));
-        params[key] = value;
+        if (divider === -1) {
+            params[param] = '';
+        } else {
+            const key = param.substr(0, divider);
+            const value = escapeFromTS(param.substr(divider + 1));
+            params[key] = value;
+        }
     }
     return params;
 }
