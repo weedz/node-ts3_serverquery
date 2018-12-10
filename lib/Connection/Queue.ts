@@ -1,5 +1,3 @@
-import { Command } from "./Command";
-
 export default class Queue {
     queue: Command[];
     constructor() {
