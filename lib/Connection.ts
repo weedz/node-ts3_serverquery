@@ -123,7 +123,7 @@ export default class Connection {
 
     errorHook(params: TS_ErrorState) {
         if (params.id !== '0') {
-            Log(`Command failed: ${chalk.red(this.commandQueue.getCommand().commandStr)} ${JSON.stringify(this.commandQueue.getCommand())}, ${JSON.stringify(params)}`, this.constructor.name, 2);
+            Log(`Command failed: ${chalk.yellow(this.commandQueue.getCommand().commandStr)} ${JSON.stringify(this.commandQueue.getCommand())}, ${JSON.stringify(params)}`, this.constructor.name, 2);
             this.getCommand().failed = true;
             this.getCommand().reject(params);
         } else {
