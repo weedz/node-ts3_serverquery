@@ -1,4 +1,5 @@
-/// <reference path="../config.d.ts" />
+/// <reference path="Types/Config.d.ts" />
+/// <reference path="Types/Types.d.ts" />
 import * as path from "path";
 import * as fs from "fs";
 import chalk from "chalk";
@@ -20,6 +21,7 @@ export default class Client {
     config: BotConfig;
     commands: object;
     inited: boolean;
+    me: TS_whoami;
 
     constructor(connection: Connection, config: BotConfig) {
         this.connection = connection;
@@ -35,6 +37,9 @@ export default class Client {
         this.inited = false;
 
         this.reloadPlugins();
+    }
+    getSelf() {
+        return this.me;
     }
     // Handle plugins
     broadcast(event: string, params?: any) {
@@ -160,10 +165,14 @@ export default class Client {
                 this.connection.send('clientupdate', { client_nickname: this.config.nickname }, {
                     noOutput: true
                 })
-            ]).then(() => {
+            ])
+            .then(() => this.connection.send("whoami"))
+            .then( (me:TS_whoami) => {
+                this.me = me;
                 this.inited = true;
                 this.broadcast('init');
-            }).catch(err => {
+            })
+            .catch(err => {
                 Log(`Error in init: ${typeof err === "object" ? JSON.stringify(err) : err}`, this.constructor.name, 1);
             });
         } else {

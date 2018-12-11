@@ -1,5 +1,7 @@
-/// <reference path="../config.d.ts" />
-/// <reference path="Connection/Types.d.ts" />
+/// <reference path="Types/Config.d.ts" />
+/// <reference path="Types/Types.d.ts" />
+/// <reference path="Types/Command.d.ts" />
+/// <reference path="Types/Events.d.ts" />
 import {
     createConnection, Socket
 } from "net";
@@ -13,8 +15,6 @@ import {
     parseParams
 } from "./Connection/Utils";
 import Log from "./Log";
-import { Command } from "./Connection/Command";
-import { CommandOptions } from "./Connection/CommandOptions";
 
 // constants
 enum STATE {
@@ -121,9 +121,9 @@ export default class Connection {
         Log(`Ping: ${ping}ms`, this.constructor.name, 5);
     }
 
-    errorHook(params) {
+    errorHook(params: TS_ErrorState) {
         if (params.id !== '0') {
-            Log(`Command failed: ${chalk.yellow(this.commandQueue.getCommand().commandStr)} ${JSON.stringify(this.commandQueue.getCommand())}, ${JSON.stringify(params)}`, this.constructor.name, 2);
+            Log(`Command failed: ${chalk.red(this.commandQueue.getCommand().commandStr)} ${JSON.stringify(this.commandQueue.getCommand())}, ${JSON.stringify(params)}`, this.constructor.name, 2);
             this.getCommand().failed = true;
             this.getCommand().reject(params);
         } else {
@@ -266,7 +266,7 @@ export default class Connection {
      * @param options Options..
      * @param priority 0=highest, 2=lowest
      */
-    send(cmd: string, args: object | string[], options: CommandOptions = {}, priority: number = 0) {
+    send(cmd: string, args?: object | string[], options: CommandOptions = {}, priority: number = 0) {
         if (!cmd) {
             return;
         }

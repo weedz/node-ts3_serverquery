@@ -11,12 +11,17 @@ const CACHE_EXPIRE = {
 class Cache {
     data: object;
     expire: number;
-    queue: object[];
+    queue: CacheQueueItem[];
     fetching?: boolean;
 
     length(): number {
         return this.queue.length;
     }
+};
+
+type CacheQueueItem = {
+    resolve: Function,
+    reject: Function
 };
 
 export default class DataStore {
@@ -51,7 +56,7 @@ export default class DataStore {
         return !cache.data || this.getCacheTime(cache, default_expire, noCache) < Date.now();
     }
 
-    pushToCacheQueue(cache: Cache, item: any) {
+    pushToCacheQueue(cache: Cache, item: CacheQueueItem) {
         if (!cache.queue) {
             cache.queue = [];
         }
@@ -65,7 +70,7 @@ export default class DataStore {
         cache.data = data;
         cache.expire = Date.now() + CACHE_EXPIRE[list];
         if (cache.queue && cache.queue.length) {
-            let item;
+            let item: CacheQueueItem;
             while (item = cache.queue.shift()) {
                 item.resolve(data);
             }
@@ -76,7 +81,7 @@ export default class DataStore {
 
     rejectRequest(err: string, cache: Cache) {
         if (cache.queue && cache.queue.length) {
-            let item;
+            let item: CacheQueueItem;
             while (item = cache.queue.shift()) {
                 item.reject(err);
             }
@@ -101,13 +106,13 @@ export default class DataStore {
         }
     }
 
-    fetchList(list: string, noCache = false) {
+    fetchList(list: string, noCache = false): Promise<any[]> {
         if (!this.storeList[list]) {
             this.storeList[list] = new Cache();
         }
         const cache = this.storeList[list];
 
-        return <Promise<any[]>>this.fetchPromise(cache, list, noCache);
+        return this.fetchPromise(cache, list, noCache);
     }
 
     fetchInfo(list: string, keyName: string, keyValue: string | number, noCache = false): Promise<any> {
@@ -123,7 +128,7 @@ export default class DataStore {
         });
     }
 
-    fetchPromise(cache: Cache, list: string, noCache: boolean, params = {}) {
+    fetchPromise(cache: Cache, list: string, noCache: boolean, params = {}): Promise<any> {
         return new Promise((resolve, reject) => {
             if (this.updateCache(cache, CACHE_EXPIRE[list], noCache)) {
                 Log(`Fetching resource ${list} ${Object.entries(params)}`, this.constructor.name, 4);

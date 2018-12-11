@@ -1,6 +1,10 @@
-import { CommandOptions } from "./CommandOptions";
+declare type CommandOptions = {
+    noOutput?: boolean,
+    expectData?: boolean,
+    mustReturnOK?: boolean
+};
 
-export type Command = {
+declare type Command = {
     label: string;
     commandStr: string;
     command: Function,

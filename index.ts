@@ -1,11 +1,7 @@
-/// <reference path="config.d.ts" />
-
+/// <reference path="lib/Types/Config.d.ts" />
 import * as config from "./config.json";
 import Client from "./lib/Client";
 import Connection from "./lib/Connection";
-
-// const configBuffer = fs.readFileSync(path.resolve("./config.json")).toString();
-// const config = JSON.parse(configBuffer);
 
 const connection = new Connection(config);
 const client = new Client(connection, config);
