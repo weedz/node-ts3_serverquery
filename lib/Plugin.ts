@@ -3,43 +3,38 @@ import Log from './Log';
 import Connection from './Connection';
 import Client from './Client';
 
-// Broadcasted events from client
-// connected() {}
-// disconnected(hadError) {}
-// init() {}
-// reload() {}
-// unload() {}
 export default class Plugin {
     config: any;
-    connection: Connection | null;
-    client: Client | null;
+    connection: Connection;
+    client: Client;
 
-    constructor(defaultConfig: any) {
-        this.config = defaultConfig;
-        this.connection = null;
-        this.client = null;
-    }
-    load(connection: Connection, client: Client) {
+    "init":Function;
+    "connected":Function;
+    "disconnected":Function;
+    "reload":Function;
+    "unload":Function;
+
+    constructor(connection: Connection, client: Client) {
         this.connection = connection;
         this.client = client;
     }
-    async loadConfig(configFile: string) {
-        const url = new URL("file://");
-        url.pathname = configFile;
-        if (fs.existsSync(url)) {
-            try {
-                const newConfig = await import(configFile);
-                if (newConfig) {
-                    this.config = {
-                        ...this.config,
-                        ...newConfig
-                    };
-                }
-            } catch (err) {
-                Log(`Error reading config: ${err}`, this.constructor.name, 1);
-            }
-        } else {
-            Log("Config not found", this.constructor.name, 2);
+}
+
+export async function loadConfig(configFile: string) {
+    const url = new URL("file://");
+    url.pathname = configFile;
+    if (fs.existsSync(url)) {
+        try {
+            return await import(configFile);
+        } catch (err) {
+            Log(`Error reading config: ${err}`, "PluginHelper", 1);
         }
+    } else {
+        Log("Config not found", "PluginHelper", 2);
     }
+    return {};
+}
+
+export function mergeConfig<T>(c1: T, c2: T) {
+    return Object.assign(c1, c2);
 }

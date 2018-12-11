@@ -1,6 +1,6 @@
 /// <reference path="Types/Config.d.ts" />
 /// <reference path="Types/Types.d.ts" />
-/// <reference path="Types/Command.d.ts" />
+/// <reference path="Types/Server.d.ts" />
 /// <reference path="Types/Events.d.ts" />
 import {
     createConnection, Socket
@@ -25,25 +25,34 @@ enum STATE {
     INIT = 4
 };
 
+enum ParamTypes {
+    SingleItem = 1,
+    List = 2,
+};
+
+type HookList = {
+    [id:string]: Function[]
+};
+
 /*
 1: Single item response
 2: Array/list response, items seperated by "|"
 */
-enum SHOULD_PARSE_PARAMS {
-    error = 1,
-    serverinfo = 1,
-    serverlist = 2,
-    clientinfo = 1,
-    clientlist = 2,
-    channelinfo = 1,
-    channellist = 2,
-    logview = 2,
+const SHOULD_PARSE_PARAMS: {[key:string]: number} = {
+    error: ParamTypes.SingleItem,
+    serverinfo: ParamTypes.SingleItem,
+    serverlist: ParamTypes.List,
+    clientinfo: ParamTypes.SingleItem,
+    clientlist: ParamTypes.List,
+    channelinfo: ParamTypes.SingleItem,
+    channellist: ParamTypes.List,
+    logview: ParamTypes.List,
 };
 
 export default class Connection {
     state: STATE;
-    registeredHooks: { [event: string]: {} };
-    REGISTERED_EVENTS: object;
+    registeredHooks: { [event: string]: HookList };
+    REGISTERED_EVENTS: { [event: string]: boolean };
     store: DataStore;
     commandQueue: CommandQueue;
     commandResult: boolean | object;
@@ -102,10 +111,12 @@ export default class Connection {
     connectionCallback() {
         Log("Connected!", this.constructor.name);
         // Send "ping" every minute
-        clearInterval(this.pingTimer);
+        if (this.pingTimer) {
+            clearInterval(this.pingTimer);
+        }
         this.pingTimer = setInterval(this.heartbeat, 60000);
         this.state = STATE.INIT;
-        this.registerHook('error', {
+        this.registerHook("error", {
             error: this.errorHook
         });
     }
@@ -123,11 +134,14 @@ export default class Connection {
 
     errorHook(params: TS_ErrorState) {
         if (params.id !== '0') {
-            Log(`Command failed: ${chalk.yellow(this.commandQueue.getCommand().commandStr)} ${JSON.stringify(this.commandQueue.getCommand())}, ${JSON.stringify(params)}`, this.constructor.name, 2);
-            this.getCommand().failed = true;
-            this.getCommand().reject(params);
+            const command = this.commandQueue.getCommand();
+            if (command) {
+                Log(`Command failed: ${chalk.yellow(command.commandStr)} ${JSON.stringify(command)}, ${JSON.stringify(params)}`, this.constructor.name, 2);
+                command.failed = true;
+                command.reject(params);
+            }
         } else {
-            this.getCommand().resolve(this.commandResult || {
+            this.commandQueue.getCommand().resolve(this.commandResult || {
                 result: "OK"
             });
         }
@@ -148,7 +162,9 @@ export default class Connection {
     onClose(hadError: boolean) {
         this.state = STATE.CLOSED;
         Log("Closing connection...", this.constructor.name, hadError ? 1 : 3);
-        clearInterval(this.pingTimer);
+        if (this.pingTimer) {
+            clearInterval(this.pingTimer);
+        }
     }
     onData(data: Buffer) {
         const msg = data.toString('utf8');
@@ -178,7 +194,7 @@ export default class Connection {
     }
 
     recievedData(msg: string) {
-        if (this.getCommand().label === 'help') {
+        if (this.commandQueue.getCommand().label === 'help') {
             process.stdout.write(msg);
         } else {
             Log(`Recieved data: ${msg}`, this.constructor.name, 5);
@@ -201,7 +217,7 @@ export default class Connection {
     handleRecievedLine(line: string, event: string) {
         const params = VALID_HOOKS[event] ?
             parseParams(line, 1, event.length + 1) :
-            parseParams(line, SHOULD_PARSE_PARAMS[this.getCommand().label]);
+            parseParams(line, SHOULD_PARSE_PARAMS[this.commandQueue.getCommand().label]);
 
         if (VALID_HOOKS[event]) {
             this.recievedEvent(params, event, line);
@@ -220,19 +236,27 @@ export default class Connection {
         }
     }
 
+    getCommand() {
+        return this.commandQueue.getCommand();
+    }
+    
     retryCommand() {
-        const command = this.getCommand();
-
-        this.commandQueue.add(command, 0);
+        const command = this.commandQueue.getCommand();
+        if (command) {
+            this.commandQueue.add(command, 0);
+        }
     }
 
     skipCommand() {
-        if (this.getCommand().failed) {
-            this.commandQueue.processQueue();
-        } else {
-            this.getCommand().reject('skipped');
-            this.state = STATE.READY;
-            this.commandQueue.processQueue();
+        const command = this.commandQueue.getCommand();
+        if (command) {
+            if (command.failed) {
+                this.commandQueue.processQueue();
+            } else {
+                command.reject('skipped');
+                this.state = STATE.READY;
+                this.commandQueue.processQueue();
+            }
         }
     }
 
@@ -244,15 +268,11 @@ export default class Connection {
         return this.commandQueue;
     }
 
-    getCommand(): Command {
-        return this.commandQueue.getCommand();
-    }
-
     writeRaw(data: string) {
         this.commandResult = false;
         this.state = STATE.AWAITING_DATA;
         // TODO: change how we log this, should be opt-in if we should log to level 3
-        let logLevel = this.getCommand().options.noOutput ? 5 : 4;
+        let logLevel = this.commandQueue.getCommand().options.noOutput ? 5 : 4;
         Log(`writeRaw(): ${data.replace("\r\n", "\\r\\n")}`, this.constructor.name, logLevel);
         this.connection.write(Buffer.from(data, 'utf8'));
     }
@@ -267,12 +287,12 @@ export default class Connection {
      * @param options Options..
      * @param priority 0=highest, 2=lowest
      */
-    send(cmd: string, args?: object | string[], options: CommandOptions = {}, priority: number = 0) {
-        if (!cmd) {
-            return;
-        }
+    send<T>(cmd: string, args?: SendParamArgs, options: CommandOptions = {}, priority: number = 0): Promise<T> {
         return new Promise((resolve, reject) => {
-            let commandStr = parseArgsToString(cmd, args);
+            if (!cmd) {
+                reject();
+            }
+            let commandStr = args ? parseArgsToString(cmd, args) : cmd;
             const command: Command = {
                 label: cmd,
                 command: () => {
@@ -287,10 +307,10 @@ export default class Connection {
         });
     }
 
-    registerHook(event: string, callbacks: {[hook: string]: Function}, id: string = "connection") {
+    registerHook(event: TS_Events, callbacks: TS_EventHooks, id: string = "connection") {
         for (let hook of Object.keys(callbacks)) {
-            if (VALID_EVENTS[event][hook]) {
-                this._pushHook(hook, id, callbacks[hook]);
+            if (VALID_EVENTS[event][hook] ) {
+                this._pushHook(hook as TS_ValidEventHooks, id, callbacks[hook as TS_ValidEventHooks] as Function);
             } else {
                 Log(`Invalid hook: ${hook}, event: ${event}`, this.constructor.name, 2);
                 return false;
@@ -298,7 +318,7 @@ export default class Connection {
         }
         return true;
     }
-    _pushHook(hook: string, id: string, callback: Function) {
+    _pushHook(hook: TS_ValidEventHooks, id: string, callback: Function) {
         if (this.registeredHooks[hook] === undefined) {
             this.registeredHooks[hook] = {};
         }
@@ -308,7 +328,7 @@ export default class Connection {
         this.registeredHooks[hook][id].push(callback);
     }
 
-    registerEvent(event: string, options: object, callbacks: {[hook: string]: Function}, id: string) {
+    registerEvent(event: TS_Events, options: object|null, callbacks: TS_EventHooks, id: string) {
         if (VALID_EVENTS[event]) {
             if (this.registerHook(event, callbacks, id)) {
                 if (!this.REGISTERED_EVENTS[event]) {
@@ -322,7 +342,7 @@ export default class Connection {
         }
     }
 
-    unregisterHook(event: string, hook: string, id: string) {
+    unregisterHook(event: TS_Events, hook: TS_ValidEventHooks, id: string) {
         if (
             VALID_EVENTS[event][hook] &&
             this.registeredHooks[hook] &&
@@ -334,7 +354,7 @@ export default class Connection {
             }
         }
     }
-    unregisterEvent(event: string, hooks: string[], id: string) {
+    unregisterEvent(event: TS_Events, hooks: TS_ValidEventHooks[], id: string) {
         if (VALID_EVENTS[event]) {
             for (let hook of hooks) {
                 this.unregisterHook(event, hook, id);

@@ -1,10 +1,10 @@
-/// <reference path="../Types/Command.d.ts" />
+/// <reference path="../Types/Server.d.ts" />
 import Log from '../Log';
 import Queue from './Queue';
 import Connection from '../Connection';
 
 export default class CommandQueue {
-    currentCommand: null | Command;
+    currentCommand: Command;
     connection : Connection;
     commandQueue : Queue[];
 
@@ -14,7 +14,15 @@ export default class CommandQueue {
             new Queue(),
             new Queue()
         ];
-        this.currentCommand = null;
+        // dret..
+        this.currentCommand = {
+            label: '',
+            commandStr: '',
+            command: () => {},
+            resolve: () => {},
+            reject: () => {},
+            options: {},
+        };
         this.connection = connection;
     }
 
@@ -36,7 +44,7 @@ export default class CommandQueue {
         }
     }
 
-    processQueueItem(command: Command) {
+    processQueueItem(command: Command|undefined) {
         if (typeof command === 'object') {
             this.currentCommand = command;
             Log(`Process command: ${command.commandStr}`, this.constructor.name, 5);
@@ -58,7 +66,7 @@ export default class CommandQueue {
         }
     }
 
-    getCommand(): Command {
+    getCommand() {
         return this.currentCommand;
     }
 }

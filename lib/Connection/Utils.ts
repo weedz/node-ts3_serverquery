@@ -1,8 +1,12 @@
+type ArgKeyValue = {
+    [key:string] : string|number
+};
+
 /**
- * @param {string} cmd command.
- * @param {object} args Do not send a string, use a JSON structure
+ * @param cmd command.
+ * @param args Do not send a string, use a JSON structure
  */
-export function parseArgsToString(cmd: string, args: object) {
+export function parseArgsToString(cmd: string, args: ArgKeyValue | string[] | number[]) {
     let str = cmd;
     if (typeof args === 'object') {
         str += " " + parseArgsFromObject(args);
@@ -10,11 +14,11 @@ export function parseArgsToString(cmd: string, args: object) {
     return str;
 }
 
-function parseArgsFromArray(args: string[]) {
+function parseArgsFromArray(args: string[] | number[]) {
     return args.join(" ");
 }
 
-function parseArgsFromJSON(args: object) {
+function parseArgsFromJSON(args: ArgKeyValue) {
     let str = "";
     for (let key of Object.keys(args)) {
         str += ` ${key}=${escapeToTS(args[key])}`;
@@ -22,7 +26,7 @@ function parseArgsFromJSON(args: object) {
     return str;
 }
 
-function parseArgsFromObject(args: object) {
+function parseArgsFromObject(args: ArgKeyValue | string[] | number[]) {
     return Array.isArray(args) ?
         parseArgsFromArray(args) :
         parseArgsFromJSON(args);
@@ -43,7 +47,7 @@ function parseParamsList(msg: string) {
 }
 
 function parseParamsElement(msg: string, start: number) {
-    const params = {};
+    const params: ArgKeyValue = {};
     for (let param of msg.substr(start).trim().split(" ")) {
         const divider = param.indexOf("=");
         if (divider === -1) {

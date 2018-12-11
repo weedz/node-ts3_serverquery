@@ -8,7 +8,7 @@ declare type AuthOptions = {
 declare type BotConfig = {
     logLevel: number;
     auth: AuthOptions;
-    plugins: object;
+    plugins: {[pluginName: string]: boolean};
     defaultServer: number;
     nickname: string
 };
