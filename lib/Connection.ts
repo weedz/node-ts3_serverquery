@@ -251,7 +251,8 @@ export default class Connection {
     writeRaw(data: string) {
         this.commandResult = false;
         this.state = STATE.AWAITING_DATA;
-        let logLevel = this.getCommand().options.noOutput ? 5 : 3;
+        // TODO: change how we log this, should be opt-in if we should log to level 3
+        let logLevel = this.getCommand().options.noOutput ? 5 : 4;
         Log(`writeRaw(): ${data.replace("\r\n", "\\r\\n")}`, this.constructor.name, logLevel);
         this.connection.write(Buffer.from(data, 'utf8'));
     }
