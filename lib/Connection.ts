@@ -16,7 +16,7 @@ import {
     parseParams
 } from "./Connection/Utils";
 import Log from "./Log";
-import Commands, { TeamSpeakCommand, TeamSpeakCommands } from './commands';
+import { TSCommandParamDefinion } from './commands';
 
 // constants
 enum STATE {
@@ -50,6 +50,11 @@ const SHOULD_PARSE_PARAMS: {[key:string]: number} = {
     channellist: ParamTypes.List,
     logview: ParamTypes.List,
 };
+
+// interface TSConnection {
+//     send<K extends keyof TSCommandList>(cmd: K, param: TSCommandList[K]["params"], options: CommandOptions, priority: number): Promise<any>;
+// }
+
 
 export default class Connection {
     state: STATE;
@@ -293,7 +298,7 @@ export default class Connection {
      * @param options Options..
      * @param priority 0=highest, 2=lowest
      */
-    send<T>(cmd: keyof TeamSpeakCommands, args?: SendParamArgs, options: CommandOptions = {}, priority: number = 0): Promise<T> {
+    send<T>(cmd: TSCommandList, args?: TSCommandParamDefinion, options: CommandOptions = {}, priority: number = 0): Promise<T> {
         return new Promise((resolve, reject) => {
             if (!cmd || typeof cmd !== "string") {
                 reject();

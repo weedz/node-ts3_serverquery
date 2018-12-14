@@ -1,12 +1,10 @@
-type ArgKeyValue = {
-    [key:string] : string|number
-};
+import { TSCommandParam, TSCommandParamDefinion } from "../commands";
 
 /**
  * @param cmd command.
  * @param args Do not send a string, use a JSON structure
  */
-export function parseArgsToString(cmd: string, args: ArgKeyValue | string[] | number[]) {
+export function parseArgsToString(cmd: string, args?: TSCommandParamDefinion) {
     let str = cmd;
     if (typeof args === 'object') {
         str += " " + parseArgsFromObject(args);
@@ -18,7 +16,7 @@ function parseArgsFromArray(args: string[] | number[]) {
     return args.join(" ");
 }
 
-function parseArgsFromJSON(args: ArgKeyValue) {
+function parseArgsFromJSON(args: TSCommandParam) {
     let str = "";
     for (let key of Object.keys(args)) {
         str += ` ${key}=${escapeToTS(args[key])}`;
@@ -26,7 +24,7 @@ function parseArgsFromJSON(args: ArgKeyValue) {
     return str;
 }
 
-function parseArgsFromObject(args: ArgKeyValue | string[] | number[]) {
+function parseArgsFromObject(args: TSCommandParamDefinion) {
     return Array.isArray(args) ?
         parseArgsFromArray(args) :
         parseArgsFromJSON(args);
@@ -47,7 +45,7 @@ function parseParamsList(msg: string) {
 }
 
 function parseParamsElement(msg: string, start: number) {
-    const params: ArgKeyValue = {};
+    const params: TSCommandParam = {};
     for (let param of msg.substr(start).trim().split(" ")) {
         const divider = param.indexOf("=");
         if (divider === -1) {

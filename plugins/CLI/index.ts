@@ -1,13 +1,13 @@
 import Plugin from "../../lib/Plugin";
 import { createInterface, Interface } from "readline";
-import CLICommands, { CommandDefinition } from '../../lib/commands';
+import CLICommands, { TSCommandDefinition, TSCommandParam, TSCommandParamDefinion } from '../../lib/commands';
 import Connection from "../../lib/Connection";
 import Client from "../../lib/Client";
 
 export const VERSION = 1;
 
 export default class CLI extends Plugin {
-    commands: {[cmd:string]: CommandDefinition};
+    commands: {[cmd:string]: TSCommandDefinition};
     rl: Interface;
     config: null;
 
@@ -68,21 +68,22 @@ export default class CLI extends Plugin {
             : [];
         const hits = completions.filter(c => c.startsWith(words[0]));
 
-        if (CLICommands && CLICommands[words[0]]) {
-            this.autoCompleteCommand(CLICommands[words[0]]);
-        }
+        // if (CLICommands && CLICommands[words[0]]) {
+        //     this.autoCompleteCommand(CLICommands[words[0]]);
+        // }
 
         // show all completions if none found
         return [hits.length ? hits : completions, words[0]];
     }
 
-    autoCompleteCommand(cmd: CommandDefinition) {
+    autoCompleteCommand(cmd: TSCommandDefinition) {
         process.stdout.write(`\nDescription: ${cmd.description}\n`);
         if (cmd.params) {
             process.stdout.write(`Params:\n`);
-            for (let param of cmd.params) {
-                process.stdout.write(`\t${param.key} = ${param.value}`);
-            }
+            // TODO: Fix..
+            // for (let param of cmd.params) {
+            //     process.stdout.write(`\t${param.key} = ${param.value}`);
+            // }
             process.stdout.write("\n");
         }
     }
@@ -100,7 +101,7 @@ export default class CLI extends Plugin {
             } else if (cmd === 'login') {
                 this.handleLoginCommand(args);
             } else {
-                this.sendCommand(cmd, args);
+                this.sendCommand(cmd as TSCommandList, args);
             }
         }
         this.rl.prompt();
@@ -126,7 +127,7 @@ export default class CLI extends Plugin {
         }
     }
 
-    async sendCommand(cmd: string, args?: string[]) {
+    async sendCommand(cmd: TSCommandList, args?: TSCommandParamDefinion) {
         try {
             const param = await this.connection.send(cmd, args);
             console.log("Result:", param);

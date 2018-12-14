@@ -1,18 +1,19 @@
-interface CommandParam {
-    key: string;
-    value: string;
+/// <reference path="Types/TeamSpeak.d.ts" />
+
+export interface TSCommandParam {
+    [key:string]: string|number
 }
 
-export interface CommandDefinition {
+export type TSCommandParamDefinion = TSCommandParam | string[] | number[];
+
+export interface TSCommandDefinition {
     description?: string;
-    params?: CommandParam[]
+    params?: TSCommandParamDefinion
     callback?: Function
 }
-export interface TeamSpeakCommand {
-    readonly [command:string]: CommandDefinition
-}
 
-export interface TeamSpeakCommands {
+
+const TSCommands: { [command in TSCommandList]: TSCommandDefinition} = {
     "banadd": {
         "description": "create a ban rule"
     },
@@ -141,12 +142,9 @@ export interface TeamSpeakCommands {
     },
     "clientinfo": {
         "description": "display client properties",
-        "params": [
-            {
-                "key": "clid",
-                "value": "client_id"
-            }
-        ]
+        "params": {
+            clid: "client_id"
+        }
     },
     "clientkick": {
         "description": "kick a client"
@@ -418,4 +416,4 @@ export interface TeamSpeakCommands {
 };
 
 
-export default TeamSpeakCommands;
+export default TSCommands;

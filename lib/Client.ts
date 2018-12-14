@@ -1,5 +1,7 @@
 /// <reference path="Types/Config.d.ts" />
 /// <reference path="Types/Types.d.ts" />
+/// <reference path="Types/TeamSpeak.d.ts" />
+
 import * as path from "path";
 import * as fs from "fs";
 import chalk from "chalk";
@@ -173,10 +175,10 @@ export default class Client {
             Log("Initializing...", this.constructor.name, 3);
             Promise.all([
                 this.login(this.config.auth.username, this.config.auth.password),
-                this.connection.send('use', [this.config.defaultServer], {
+                this.connection.send("use", [this.config.defaultServer], {
                     noOutput: true
                 }),
-                this.connection.send('clientupdate', { client_nickname: this.config.nickname }, {
+                this.connection.send("clientupdate", { client_nickname: this.config.nickname }, {
                     noOutput: true
                 })
             ])
@@ -184,6 +186,7 @@ export default class Client {
             .then(me => {
                 this.me = me;
                 this.inited = true;
+                Log("Init finished!", this.constructor.name, 3);
                 this.broadcast('init');
             })
             .catch( (err: Error) => {
