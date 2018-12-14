@@ -1,4 +1,18 @@
-{
+interface CommandParam {
+    key: string;
+    value: string;
+}
+
+export interface CommandDefinition {
+    description?: string;
+    params?: CommandParam[]
+    callback?: Function
+}
+export interface TeamSpeakCommand {
+    readonly [command:string]: CommandDefinition
+}
+
+export interface TeamSpeakCommands {
     "banadd": {
         "description": "create a ban rule"
     },
@@ -401,4 +415,7 @@
     "whoami": {
         "description": "display current session info"
     }
-}
+};
+
+
+export default TeamSpeakCommands;

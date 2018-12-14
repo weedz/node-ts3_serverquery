@@ -2,6 +2,7 @@
 /// <reference path="Types/Types.d.ts" />
 /// <reference path="Types/Server.d.ts" />
 /// <reference path="Types/Events.d.ts" />
+
 import {
     createConnection, Socket
 } from "net";
@@ -15,6 +16,7 @@ import {
     parseParams
 } from "./Connection/Utils";
 import Log from "./Log";
+import Commands, { TeamSpeakCommand, TeamSpeakCommands } from './commands';
 
 // constants
 enum STATE {
@@ -236,6 +238,10 @@ export default class Connection {
         }
     }
 
+    // checkValidCommand(cmd: TeamSpeakCommand): cmd is TeamSpeakCommand {
+        
+    // }
+
     getCommand() {
         return this.commandQueue.getCommand();
     }
@@ -287,10 +293,11 @@ export default class Connection {
      * @param options Options..
      * @param priority 0=highest, 2=lowest
      */
-    send<T>(cmd: string, args?: SendParamArgs, options: CommandOptions = {}, priority: number = 0): Promise<T> {
+    send<T>(cmd: keyof TeamSpeakCommands, args?: SendParamArgs, options: CommandOptions = {}, priority: number = 0): Promise<T> {
         return new Promise((resolve, reject) => {
-            if (!cmd) {
+            if (!cmd || typeof cmd !== "string") {
                 reject();
+                return;
             }
             let commandStr = args ? parseArgsToString(cmd, args) : cmd;
             const command: Command = {
@@ -333,7 +340,7 @@ export default class Connection {
             if (this.registerHook(event, callbacks, id)) {
                 if (!this.REGISTERED_EVENTS[event]) {
                     this.REGISTERED_EVENTS[event] = true;
-                    this.send('servernotifyregister', {
+                    this.send("servernotifyregister", {
                         event,
                         ...options
                     });

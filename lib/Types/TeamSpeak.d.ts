@@ -1,4 +1,4 @@
-declare type TS_whoami = {
+declare interface TS_whoami {
     virtualserver_status: string,
     virtualserver_id: number,
     virtualserver_unique_identifier: string,
@@ -10,16 +10,16 @@ declare type TS_whoami = {
     client_login_name: string,
     client_unique_identifier: string,
     client_origin_server_id: number
-};
+}
 
-declare type TS_version = {
+declare interface TS_version {
     version: string,
     build: number,
     platform: string
-};
+}
 
 // Client types
-declare type TS_ClientInfo = {
+declare interface TS_ClientInfo {
     cid: number,
     client_idle_time: number,
     client_unique_identifier: string,
@@ -80,9 +80,9 @@ declare type TS_ClientInfo = {
     connection_bandwidth_received_last_minute_total: number,
     connection_connected_time: number,
     connection_client_ip: string
-};
+}
 
-declare type TS_ClientListItem = {
+declare interface TS_ClientListItem {
     clid: number;
     cid: number;
     client_database_id: number;
@@ -102,7 +102,7 @@ declare enum TS_Codec {
     CODEC_OPUS_MUSIC
 }
 
-declare type TS_ChannelInfo = {
+declare interface TS_ChannelInfo {
     pid: number,
     channel_name: string,
     channel_topic: string,
@@ -131,15 +131,15 @@ declare type TS_ChannelInfo = {
     channel_icon_id: number,
     channel_flag_private: number|boolean,
     seconds_empty: number
-};
+}
 
-declare type TS_ChannelListItem = {
+declare interface TS_ChannelListItem {
     cid: number,
     pid: number,
     channel_order: number,
     channel_name: string,
     total_clients: number,
     channel_needed_subscribe_power: number
-};
+}
 
 declare type TS_ChannelList = Array<TS_ChannelListItem>;

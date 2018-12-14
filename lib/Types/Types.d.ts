@@ -6,7 +6,9 @@ declare enum LogLevels {
     DEBUG,
     DEBUG_ALL
 }
-declare type SendParamArgs = {[key:string] : string|number}|string[]|number[];
+declare type SendParamArgs = {
+    [key:string] : string|number
+}|string[]|number[];
 
 declare type AllowedPluginEvents = 
     |"init"
@@ -15,10 +17,10 @@ declare type AllowedPluginEvents =
     |"reload"
     |"unload";
 
-declare type TS_ErrorState = {
+declare interface TS_ErrorState {
     id: string|number,
     msg: string
-};
+}
 
 declare type TS_Events = 
     |"error"
@@ -34,7 +36,7 @@ declare type TS_ValidEventHooks =
     |"notifycliententerview"
     |"notifyclientmoved";
 
-declare type TS_EventHooks = {
+declare interface TS_EventHooks {
     "error"?:Function;
     "notifyclientleftview"?:Function;
     "notifycliententerview"?:Function;

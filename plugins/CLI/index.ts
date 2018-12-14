@@ -1,30 +1,13 @@
 import Plugin from "../../lib/Plugin";
 import { createInterface, Interface } from "readline";
-import * as CLICommandsJSON from "./commands.json";
+import CLICommands, { CommandDefinition } from '../../lib/commands';
 import Connection from "../../lib/Connection";
 import Client from "../../lib/Client";
-
-const CLICommands: CLICommands = CLICommandsJSON;
-
-interface CLICommands {
-    [cmd:string]: Command
-};
-
-interface CommandParam {
-    key: string;
-    value: string;
-}
-
-interface Command {
-    description?: string;
-    params?: CommandParam[]
-    callback?: Function
-}
 
 export const VERSION = 1;
 
 export default class CLI extends Plugin {
-    commands: {[cmd:string]: Command};
+    commands: {[cmd:string]: CommandDefinition};
     rl: Interface;
     config: null;
 
@@ -93,7 +76,7 @@ export default class CLI extends Plugin {
         return [hits.length ? hits : completions, words[0]];
     }
 
-    autoCompleteCommand(cmd: Command) {
+    autoCompleteCommand(cmd: CommandDefinition) {
         process.stdout.write(`\nDescription: ${cmd.description}\n`);
         if (cmd.params) {
             process.stdout.write(`Params:\n`);
