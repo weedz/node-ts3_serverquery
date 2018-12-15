@@ -1,13 +1,15 @@
-import { TSCommandParam, TSCommandParamDefinion } from "../commands";
+import { TSCommandParam, TSCommandParamDefinion, TSCommandList } from "../commands";
 
 /**
  * @param cmd command.
  * @param args Do not send a string, use a JSON structure
  */
-export function parseArgsToString(cmd: string, args?: TSCommandParamDefinion) {
-    let str = cmd;
+export function parseArgsToString<K extends keyof TSCommandList>(cmd: K, args: TSCommandList[K]) {
+    let str = cmd as string;
     if (typeof args === 'object') {
         str += " " + parseArgsFromObject(args);
+    } else {
+        str += " " + args as string;
     }
     return str;
 }
@@ -16,7 +18,7 @@ function parseArgsFromArray(args: string[] | number[]) {
     return args.join(" ");
 }
 
-function parseArgsFromJSON(args: TSCommandParam) {
+function parseArgsFromJSON(args: any) {
     let str = "";
     for (let key of Object.keys(args)) {
         str += ` ${key}=${escapeToTS(args[key])}`;
@@ -24,7 +26,7 @@ function parseArgsFromJSON(args: TSCommandParam) {
     return str;
 }
 
-function parseArgsFromObject(args: TSCommandParamDefinion) {
+function parseArgsFromObject(args: any) {
     return Array.isArray(args) ?
         parseArgsFromArray(args) :
         parseArgsFromJSON(args);

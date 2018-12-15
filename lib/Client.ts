@@ -161,7 +161,7 @@ export default class Client {
     }
 
     showHelp(cmd?: string) {
-        return this.connection.send('help', cmd ? [cmd] : undefined);
+        return this.connection.send("help", cmd);
     }
 
     login(username: string, password: string) {
@@ -175,15 +175,15 @@ export default class Client {
             Log("Initializing...", this.constructor.name, 3);
             Promise.all([
                 this.login(this.config.auth.username, this.config.auth.password),
-                this.connection.send("use", [this.config.defaultServer], {
+                this.connection.send("use", this.config.defaultServer, {
                     noOutput: true
                 }),
                 this.connection.send("clientupdate", { client_nickname: this.config.nickname }, {
                     noOutput: true
                 })
             ])
-            .then(() => this.connection.send<TS_whoami>("whoami"))
-            .then(me => {
+            .then(() => this.connection.send("whoami"))
+            .then( (me: TS_whoami) => {
                 this.me = me;
                 this.inited = true;
                 Log("Init finished!", this.constructor.name, 3);

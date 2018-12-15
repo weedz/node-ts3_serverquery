@@ -16,7 +16,7 @@ import {
     parseParams
 } from "./Connection/Utils";
 import Log from "./Log";
-import { TSCommandParamDefinion } from './commands';
+import { TSCommandParamDefinion, TSCommandList } from './commands';
 
 // constants
 enum STATE {
@@ -131,7 +131,7 @@ export default class Connection {
     async heartbeat() {
         Log("Sending heartbeat...", this.constructor.name, 4);
         const startTime = process.hrtime();
-        await this.send('version', undefined, {
+        await this.send('version', null, {
             noOutput: true
         }, 0);
         const diff = process.hrtime(startTime);
@@ -298,7 +298,7 @@ export default class Connection {
      * @param options Options..
      * @param priority 0=highest, 2=lowest
      */
-    send<T>(cmd: TSCommandList, args?: TSCommandParamDefinion, options: CommandOptions = {}, priority: number = 0): Promise<T> {
+    send<K extends keyof TSCommandList>(cmd: K, args?: TSCommandList[K]|null, options: CommandOptions = {}, priority: number = 0): Promise<any> {
         return new Promise((resolve, reject) => {
             if (!cmd || typeof cmd !== "string") {
                 reject();
