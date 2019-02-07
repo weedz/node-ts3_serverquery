@@ -16,6 +16,15 @@ export interface TSCommandList {
     clientinfo: {
         clid: number
     },
+    channelinfo: {
+        cid: number
+    },
+    clientlist: null,
+    clientmove: {
+        clid: number,
+        cid: number
+    },
+    channellist: null,
     help: string|undefined,
     login: {
         client_login_name: string,

@@ -1,11 +1,5 @@
-import Log from '../Log';
+import { TSCommandList } from '../commands';
 import Connection from '../Connection';
-
-type AllowedCacheNames = 
-    |"clientlist"
-    |"clientinfo"
-    |"channellist"
-    |"channeninfo";
 
 type ListCache = 
     |"clientlist"
@@ -15,7 +9,7 @@ type ItemCache =
     |"clientinfo"
     |"channelinfo";
 
-const ItemKeyMap: {[listName in ItemCache]: string} = {
+const ItemKeyMap: {[listName in ItemCache]: keyof TSCommandList[listName]} = {
     clientinfo: "clid",
     channelinfo: "cid"
 };
@@ -27,13 +21,14 @@ export default class DataStore {
         this.connection = connection;
     }
 
-    fetchList<T>(cacheName: ListCache) {
-        return this.connection.send<T>(cacheName);
+    fetchList(cacheName: ListCache) {
+        return this.connection.send<typeof cacheName>(cacheName);
     }
 
-    fetchItem<T>(cacheName: ItemCache, id:number) {
+    fetchItem(cacheName: ItemCache, id:number) {
         const key = ItemKeyMap[cacheName];
-        return this.connection.send<T>(cacheName, {[key]: id});
+        // typeguarded by ItemKeyMap
+        return this.connection.send<typeof cacheName>(cacheName, <any>{ [key]: id });
     }
 
     forceUpdateItem() {
