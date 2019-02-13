@@ -294,7 +294,7 @@ export default class Connection {
 
     /**
      * @param cmd Name of the command to be sent to teamspeak server
-     * @param args DO NOT USE A STRING, use a JSON structure
+     * @param args
      * @param options Options..
      * @param priority 0=highest, 2=lowest
      */

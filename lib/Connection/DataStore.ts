@@ -9,7 +9,7 @@ type ItemCache =
     |"clientinfo"
     |"channelinfo";
 
-const ItemKeyMap: {[listName in ItemCache]: keyof TSCommandList[listName]} = {
+const ItemKeyMap: {[listName in ItemCache]: keyof TSCommandList[listName]} = <const> {
     clientinfo: "clid",
     channelinfo: "cid"
 };

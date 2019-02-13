@@ -1,5 +1,3 @@
-/// <reference path="Types/TeamSpeak.d.ts" />
-
 export interface TSCommandParam {
     [key:string]: string|number
 }

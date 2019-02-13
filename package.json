@@ -21,10 +21,10 @@
   },
   "homepage": "https://github.com/weedz/node-ts3_serverquery#readme",
   "dependencies": {
-    "@types/node": "^10.12.21",
+    "@types/node": "^11.9.3",
     "chalk": "^2.4.2",
     "ts-node": "^8.0.2",
-    "typescript": "^3.3.3"
+    "typescript": "^3.4.0-dev.20190213"
   },
   "devDependencies": {}
 }
