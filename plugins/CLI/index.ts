@@ -1,13 +1,13 @@
 import Plugin from "../../lib/Plugin";
 import { createInterface, Interface } from "readline";
-import { TSCommandDefinition, TSCommandParamDefinion, TSCommandList } from '../../lib/commands';
+import { TSCommandList } from '../../lib/commands';
 import Connection from "../../lib/Connection";
 import Client from "../../lib/Client";
 
 export const VERSION = 1;
 
 export default class CLI extends Plugin {
-    commands: {[cmd:string]: TSCommandDefinition};
+    commands: {[cmd:string]: any};
     rl: Interface;
     config: null;
 
@@ -78,7 +78,7 @@ export default class CLI extends Plugin {
         return words;
     }
 
-    autoCompleteCommand(cmd: TSCommandDefinition) {
+    autoCompleteCommand(cmd: any) {
         process.stdout.write(`\nDescription: ${cmd.description}\n`);
         if (cmd.params) {
             process.stdout.write(`Params:\n`);

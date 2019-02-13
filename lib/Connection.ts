@@ -16,7 +16,7 @@ import {
     parseParams
 } from "./Connection/Utils";
 import Log from "./Log";
-import { TSCommandParamDefinion, TSCommandList } from './commands';
+import { TSCommandList } from './commands';
 
 // constants
 enum STATE {

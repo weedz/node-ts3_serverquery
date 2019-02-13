@@ -1,12 +1,8 @@
-import { TSCommandParam, TSCommandParamDefinion, TSCommandList } from "../commands";
+import { TSCommandList } from "../commands";
 
-/**
- * @param cmd command.
- * @param args Do not send a string, use a JSON structure
- */
 export function parseArgsToString<K extends keyof TSCommandList>(cmd: K, args: TSCommandList[K]) {
     let str = cmd as string;
-    if (typeof args === 'object') {
+    if (typeof args === "object") {
         str += " " + parseArgsFromObject(args);
     } else {
         str += " " + args as string;
@@ -19,17 +15,30 @@ function parseArgsFromArray(args: string[] | number[]) {
 }
 
 function parseArgsFromJSON(args: any) {
-    let str = "";
-    for (let key of Object.keys(args)) {
-        str += ` ${key}=${escapeToTS(args[key])}`;
-    }
-    return str;
+    return Object.keys(args).reduce( (accumulator, key) => {
+        const value = args[key];
+        if (key.substr(0,1) === "-") {
+            // Handle "flag" type arguments. eg. "-all"
+            if (value) {
+                accumulator += ` ${key}`;
+            }
+        } else {
+            if (Array.isArray(value)) {
+                accumulator += value.map( currentValue => parseArgsFromJSON(currentValue)).join('|');
+            } else if (typeof value === "boolean") {
+                accumulator += ` ${key}=${value ? "1" : "0"}`;
+            } else {
+                accumulator += ` ${key}=${escapeToTS(value)}`;
+            }
+        }
+        return accumulator;
+    }, "");
 }
 
-function parseArgsFromObject(args: any) {
-    return Array.isArray(args) ?
-        parseArgsFromArray(args) :
-        parseArgsFromJSON(args);
+function parseArgsFromObject<K extends keyof TSCommandList>(args: TSCommandList[K]) {
+    return Array.isArray(args)
+        ? parseArgsFromArray(args)
+        : parseArgsFromJSON(args);
 }
 
 export function parseParams(msg: string, type: number, start = 0): object | boolean {
@@ -47,7 +56,7 @@ function parseParamsList(msg: string) {
 }
 
 function parseParamsElement(msg: string, start: number) {
-    const params: TSCommandParam = {};
+    const params: { [K:string]: string|number } = {};
     for (let param of msg.substr(start).trim().split(" ")) {
         const divider = param.indexOf("=");
         if (divider === -1) {
