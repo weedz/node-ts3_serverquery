@@ -12,9 +12,17 @@ import Plugin from "./Plugin";
 const pluginsPath = path.resolve('./plugins');
 
 interface PluginObject {
-    plugin: Plugin;
-    loaded?: boolean;
-    version?: string | number;
+    plugin: Plugin
+    loaded?: boolean
+    version?: string
+    optional?: boolean
+    dependencies?: PluginDependency[]
+};
+
+interface PluginDependency {
+    version: string
+    optional?: boolean
+    required?: PluginDependency[]
 };
 
 export default class Client {
@@ -105,7 +113,7 @@ export default class Client {
             }
         }
     }
-    async loadPlugin(pluginName) {
+    async loadPlugin(pluginName: string) {
         if (!this.plugins[pluginName] || !this.plugins[pluginName].plugin) {
             const pluginPath = path.join(pluginsPath, pluginName);
             if (fs.existsSync(pluginPath)) {
@@ -147,7 +155,7 @@ export default class Client {
         });
     }
     async pluginBuildDependencyList(pluginPath: string) {
-        const deps = {};
+        const deps: { [key: string]: PluginObject} = {};
         return new Promise( (resolve, reject) => {
             import(path.resolve(pluginPath, "plugin.json")).then(async pluginJSON => {
                 if (typeof pluginJSON.dependencies === "object") {
