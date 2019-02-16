@@ -7,7 +7,7 @@ const connection = new Connection(config);
 const client = new Client(connection, config);
 
 // parse commandline arguments
-const args = {};
+const args: {[parameter:string]: null|string|boolean} = {};
 for (let argv of process.argv.splice(2)) {
     const [key, value] = argv.split("=");
     args[key] = value !== undefined ? value : true;

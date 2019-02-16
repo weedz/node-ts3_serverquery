@@ -1,5 +1,7 @@
 /// <reference path="Types/Config.d.ts" />
 /// <reference path="Types/Types.d.ts" />
+/// <reference path="Types/TeamSpeak.d.ts" />
+
 import * as path from "path";
 import * as fs from "fs";
 import chalk from "chalk";
@@ -9,7 +11,7 @@ import Plugin from "./Plugin";
 
 const pluginsPath = path.resolve('./plugins');
 
-type PluginObject = {
+interface PluginObject {
     plugin: Plugin;
     loaded?: boolean;
     version?: string | number;
@@ -26,9 +28,9 @@ export default class Client {
     constructor(connection: Connection, config: BotConfig) {
         this.connection = connection;
         this.connection.connection.on('connect', () => {
-            this.broadcast('connected');
+            this.broadcast("connected");
         }).on('close', hadError => {
-            this.broadcast('disconnected', hadError);
+            this.broadcast("disconnected", hadError);
         });
 
         this.plugins = {};
@@ -36,18 +38,33 @@ export default class Client {
         this.commands = {};
         this.inited = false;
 
+        // Should be {null} or something similiar until we get whoami from server
+        this.me = {
+            virtualserver_status: "",
+            virtualserver_id: 0,
+            virtualserver_unique_identifier: "",
+            virtualserver_port: 0,
+            client_id: 0,
+            client_channel_id: 0,
+            client_nickname: "",
+            client_database_id: 0,
+            client_login_name: "",
+            client_unique_identifier: "",
+            client_origin_server_id: 0
+        };
+
         this.reloadPlugins();
     }
     getSelf() {
         return this.me;
     }
     // Handle plugins
-    broadcast(event: string, params?: any) {
+    broadcast(event: AllowedPluginEvents, params?: any) {
         for (let plugin of Object.values(this.plugins).filter(plugin => plugin.loaded)) {
             this.notify(plugin, event, params);
         }
     }
-    notify(plugin: PluginObject, event: string, params?: any) {
+    notify(plugin: PluginObject, event: AllowedPluginEvents, params?: any) {
         return new Promise( (resolve, reject) => {
             let result = true;
             if (typeof plugin.plugin[event] === "function") {
@@ -64,7 +81,7 @@ export default class Client {
         })
     }
     getPluginsStatus() {
-        const plugins = {};
+        const plugins: { [pluginName: string] : { loaded?:boolean, version?:string|number } } = {};
         for (let plugin of Object.keys(this.plugins)) {
             plugins[plugin] = {
                 loaded: this.plugins[plugin].loaded
@@ -103,11 +120,10 @@ export default class Client {
     initPlugin(pluginName: string) {
         import(path.resolve(pluginsPath, pluginName)).then(plugin => {
             this.plugins[pluginName] = {
-                plugin: new plugin.default(),
+                plugin: new plugin.default(this.connection, this),
                 version: plugin.VERSION,
                 loaded: true
             };
-            this.plugins[pluginName].plugin.load(this.connection, this);
             this.config.plugins[pluginName] = true;
             if (this.connection.connected()) {
                 this.notify(this.plugins[pluginName], 'connected', this.connection).then(() => {
@@ -121,7 +137,7 @@ export default class Client {
             Log(`Error loading plugin ${pluginName}: ${err}`, this.constructor.name, 1);
         });
     }
-    unloadPlugin(pluginName) {
+    unloadPlugin(pluginName: string) {
         if (this.plugins[pluginName]) {
             this.notify(this.plugins[pluginName], 'unload').then(() => {
                 delete this.plugins[pluginName];
@@ -131,10 +147,10 @@ export default class Client {
         }
     }
     // /Handle plugins
-    createPluginHook(pluginName, hook, callback) {
+    createPluginHook(pluginName: string, hook: string, callback: Function) {
 
     }
-    createPluginEvent(pluginName, event, callback) {
+    createPluginEvent(pluginName: string, event: string, callback: Function) {
 
     }
     registerPluginHook() {
@@ -145,7 +161,7 @@ export default class Client {
     }
 
     showHelp(cmd?: string) {
-        return this.connection.send('help', [cmd]);
+        return this.connection.send("help", cmd);
     }
 
     login(username: string, password: string) {
@@ -159,20 +175,21 @@ export default class Client {
             Log("Initializing...", this.constructor.name, 3);
             Promise.all([
                 this.login(this.config.auth.username, this.config.auth.password),
-                this.connection.send('use', [this.config.defaultServer], {
+                this.connection.send("use", this.config.defaultServer, {
                     noOutput: true
                 }),
-                this.connection.send('clientupdate', { client_nickname: this.config.nickname }, {
+                this.connection.send("clientupdate", { client_nickname: this.config.nickname }, {
                     noOutput: true
                 })
             ])
             .then(() => this.connection.send("whoami"))
-            .then( (me:TS_whoami) => {
+            .then( (me: TS_whoami) => {
                 this.me = me;
                 this.inited = true;
+                Log("Init finished!", this.constructor.name, 3);
                 this.broadcast('init');
             })
-            .catch(err => {
+            .catch( (err: Error) => {
                 Log(`Error in init: ${typeof err === "object" ? JSON.stringify(err) : err}`, this.constructor.name, 1);
             });
         } else {
