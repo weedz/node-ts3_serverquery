@@ -20,19 +20,20 @@ const logLevelString: {[loglevel:number]: string} = {
 };
 
 /**
- * @param {number} level - Log level, 0=critical,1=error, 2=warn, 3=info, 4=debug 5=ALL debug
+ * @param str Message
+ * @param identifier Log identifier
+ * @param level Log level, 0=critical,1=error, 2=warn, 3=info, 4=debug 5=ALL debug
  */
 export default function Log(str: string, identifier: string, level: LogLevels = 3) {
     if (config.logLevel < level) {
         return;
     }
-    process.stdout.write(chalk.white(new Date().toISOString()));
-
-    process.stdout.write(` [${logLevelMap[level](logLevelString[level])}]`);
-
     if (!identifier) {
         identifier = "LOG";
     }
-    process.stdout.write(`: [${chalk.green(identifier)}]`);
-    process.stdout.write(`: ${str}\n`);
+
+    let logMsg = `${chalk.white(new Date().toISOString())} [${logLevelMap[level](logLevelString[level])}]`;
+    logMsg += `: [${chalk.green(identifier)}]`;
+    logMsg += `: ${str}\n`;
+    process.stdout.write(logMsg);
 }
