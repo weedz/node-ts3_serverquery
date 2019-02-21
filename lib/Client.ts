@@ -3,31 +3,13 @@
 /// <reference path="Types/TeamSpeak.d.ts" />
 
 import * as path from "path";
-import * as fs from "fs";
-import chalk from "chalk";
 import Log from "./Log";
 import Connection from "./Connection";
-import Plugin from "./Plugin";
-
-const pluginsPath = path.resolve('./plugins');
-
-interface PluginObject {
-    plugin: Plugin
-    loaded?: boolean
-    version?: string
-    optional?: boolean
-    dependencies?: PluginDependency[]
-};
-
-interface PluginDependency {
-    version: string
-    optional?: boolean
-    required?: PluginDependency[]
-};
+import PluginLoader, { PluginObject } from "./PluginLoader";
 
 export default class Client {
     connection: Connection;
-    plugins: {[pluginName: string]: PluginObject};
+    plugins: Map<string, any>;
     config: BotConfig;
     commands: object;
     inited: boolean;
@@ -41,7 +23,12 @@ export default class Client {
             this.broadcast("disconnected", hadError);
         });
 
-        this.plugins = {};
+        this.plugins = new Map();
+
+        PluginLoader(config.plugins, path.resolve('./plugins'), { connection, client: this }, (str:string) => (Log(str, 'PluginLoader', 5))).then(plugins => {
+            this.plugins = plugins;
+        });
+
         this.config = config;
         this.commands = {};
         this.inited = false;
@@ -60,8 +47,6 @@ export default class Client {
             client_unique_identifier: "",
             client_origin_server_id: 0
         };
-
-        this.reloadPlugins();
     }
     getSelf() {
         return this.me;
@@ -92,122 +77,13 @@ export default class Client {
         const plugins: { [pluginName: string] : { loaded?:boolean, version?:string|number } } = {};
         for (let plugin of Object.keys(this.plugins)) {
             plugins[plugin] = {
-                loaded: this.plugins[plugin].loaded
+                loaded: this.plugins.get(plugin).loaded
             };
-            if (this.plugins[plugin]) {
-                plugins[plugin].version = this.plugins[plugin].version
+            if (this.plugins.has(plugin)) {
+                plugins[plugin].version = this.plugins.get(plugin).version;
             }
         }
         return plugins;
-    }
-    async reloadPlugins() {
-        for (let pluginName of Object.keys(this.config.plugins)) {
-            if (this.config.plugins[pluginName] || (this.plugins[pluginName] && this.plugins[pluginName].loaded)) {
-                try {
-                    await this.loadPlugin(pluginName);
-                } catch (err) {
-                    Log(`Plugin ${pluginName} not found!`, this.constructor.name, 1);
-                }
-            } else {
-                delete this.plugins[pluginName];
-            }
-        }
-    }
-    async loadPlugin(pluginName: string) {
-        if (!this.plugins[pluginName] || !this.plugins[pluginName].plugin) {
-            const pluginPath = path.join(pluginsPath, pluginName);
-            if (fs.existsSync(pluginPath)) {
-                await this.initPlugin(pluginName, pluginPath);
-            } else {
-                throw new Error("PLUGIN_NOT_FOUND");
-            };
-        } else {
-            console.log(pluginName + " already loaded");
-            // this.notify(this.plugins[pluginName], 'reload').then(() => {
-            //     Log(`Plugin ${pluginName} reloaded!`, this.constructor.name, 4);
-            // }).catch(err => {
-            //     Log(`Error reloading plugin ${pluginName}: ${err}`, this.constructor.name, 1);
-            // });
-        }
-    }
-
-    async initPlugin(pluginName: string, pluginPath: string) {
-        await import(path.resolve(pluginsPath, pluginName)).then(async plugin => {
-            const deps = await this.pluginBuildDependencyList(pluginPath);
-            console.log("Dependencies: ", deps);
-
-            this.plugins[pluginName] = {
-                plugin: new plugin.default(this.connection, this),
-                version: plugin.VERSION,
-                loaded: true
-            };
-            this.config.plugins[pluginName] = true;
-            if (this.connection.connected()) {
-                this.notify(this.plugins[pluginName], 'connected', this.connection).then(() => {
-                    if (this.inited) {
-                        this.notify(this.plugins[pluginName], 'init');
-                    }
-                });
-            }
-            Log(`Plugin ${chalk.green(pluginName)} [${this.plugins[pluginName].version}] loaded`, this.constructor.name);
-        }).catch(err => {
-            Log(`Error loading plugin ${pluginName}: ${err.code} (${err.data})`, this.constructor.name, 1);
-        });
-    }
-    async pluginBuildDependencyList(pluginPath: string) {
-        const deps: { [key: string]: PluginObject} = {};
-        return new Promise( (resolve, reject) => {
-            import(path.resolve(pluginPath, "plugin.json")).then(async pluginJSON => {
-                if (typeof pluginJSON.dependencies === "object") {
-                    const dependencies = pluginJSON.dependencies
-                    for (let dep of Object.keys(dependencies)) {
-                        deps[dep] = typeof dependencies[dep] === "object" ? {
-                            ...dependencies[dep]
-                        } : {
-                            version: dependencies[dep],
-                            optional: false
-                        };
-                        try {
-                            if (typeof this.config.plugins[dep] === "boolean" && !this.config.plugins[dep]) {
-                                reject({code: "DEPENDENCY_DISABLED", data: dep});
-                            } else {
-                                deps[dep].plugin = await import(path.resolve(pluginsPath, dep));
-                            }
-                        } catch (err) {
-                            if (!deps[dep].optional) {
-                                reject({code: "DEPENDENCY_NOT_FOUND", data: dep});
-                            }
-                        }
-                    }
-                }
-                resolve(deps);
-            }).catch(err => {
-                console.log(`Error in ${pluginPath}`, err);
-                reject(err);
-            });
-        });
-    }
-    unloadPlugin(pluginName: string) {
-        if (this.plugins[pluginName]) {
-            this.notify(this.plugins[pluginName], 'unload').then(() => {
-                delete this.plugins[pluginName];
-            });
-        } else {
-            Log(`Plugin ${pluginName} not loaded`, this.constructor.name, 1);
-        }
-    }
-    // /Handle plugins
-    createPluginHook(pluginName: string, hook: string, callback: Function) {
-
-    }
-    createPluginEvent(pluginName: string, event: string, callback: Function) {
-
-    }
-    registerPluginHook() {
-
-    }
-    registerPluginEvent() {
-
     }
 
     showHelp(cmd?: string) {

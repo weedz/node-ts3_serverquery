@@ -6,9 +6,9 @@
         "host": "127.0.0.1",
         "port": 10011
     },
-    "plugins": {
-        "CLI": true
-    },
+    "plugins": [
+        "CLI"
+    ],
     "defaultServer": 1,
     "nickname": "ServerQueryBois"
 }
