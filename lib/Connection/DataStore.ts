@@ -36,7 +36,7 @@ export default class DataStore {
         } else {
             Log(`Cached data: ${cacheName}`, "DataStore", 5);
         }
-        return Promise.resolve(currentCache.data);
+        return currentCache.data;
     }
 
     async fetchItem(cacheName: ItemCache, id:number) {
@@ -48,6 +48,7 @@ export default class DataStore {
             cache = cacheList.get(id);
         } else {
             cacheList = new Map();
+            Cache.set(cacheName, cacheList);
         }
         if (!cache || cache.time < time + 1000) {
             cache = {
@@ -59,14 +60,14 @@ export default class DataStore {
         } else {
             Log(`Cached data: ${cacheName}, id=${id}`, "DataStore", 5);
         }
-        return Promise.resolve(cache.data);
+        return cache.data;
     }
 
     forceUpdateItem() {
-
+        // TODO: implement..
     }
     forceUpdateList() {
-
+        // TODO: implement..
     }
 
     updateCacheItem() {
