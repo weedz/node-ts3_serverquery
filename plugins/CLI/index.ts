@@ -4,14 +4,12 @@ import { TSCommandList } from '../../lib/commands';
 import Connection from "../../lib/Connection";
 import Client from "../../lib/Client";
 
-export const VERSION = 1;
-
 export default class CLI extends Plugin {
     commands: {[cmd:string]: any};
     rl: Interface;
     config: null;
 
-    constructor(connection: Connection, client: Client) {
+    constructor({ connection, client }: { connection: Connection, client: Client}) {
         super(connection, client);
         this.commands = {};
         this.registerCommand('init', null, () => {
@@ -38,15 +36,16 @@ export default class CLI extends Plugin {
                 console.log(plugin + (pluginsList[plugin].loaded ? ` [v${pluginsList[plugin].version}] - Loaded` : " Not loaded"));
             }
         });
-        this.registerCommand('pluginreload', null, () => {
-            this.client.reloadPlugins();
-        });
-        this.registerCommand('pluginload', null, (plugin: string) => {
-            this.client.loadPlugin(plugin);
-        });
-        this.registerCommand('pluginunload', null, (plugin: string) => {
-            this.client.unloadPlugin(plugin);
-        });
+        // TODO: re-implement..
+        // this.registerCommand('pluginreload', null, () => {
+        //     this.client.reloadPlugins();
+        // });
+        // this.registerCommand('pluginload', null, (plugin: string) => {
+        //     this.client.loadPlugin(plugin);
+        // });
+        // this.registerCommand('pluginunload', null, (plugin: string) => {
+        //     this.client.unloadPlugin(plugin);
+        // });
 
         this.handleAutoCompletion = this.handleAutoCompletion.bind(this);
         this.onLine = this.onLine.bind(this);

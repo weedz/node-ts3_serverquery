@@ -51,11 +51,6 @@ const SHOULD_PARSE_PARAMS: {[key:string]: number} = {
     logview: ParamTypes.List,
 };
 
-// interface TSConnection {
-//     send<K extends keyof TSCommandList>(cmd: K, param: TSCommandList[K]["params"], options: CommandOptions, priority: number): Promise<any>;
-// }
-
-
 export default class Connection {
     state: STATE;
     registeredHooks: { [event: string]: HookList };
@@ -155,7 +150,7 @@ export default class Connection {
     }
 
     onError(e: Error) {
-        Log(`ERROR: ${e}`, this.constructor.name, 1);
+        Log(`${e}`, this.constructor.name, 1);
     }
 
     onLookup() {
