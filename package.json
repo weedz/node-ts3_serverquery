@@ -1,13 +1,13 @@
 {
   "name": "ts3_bot",
   "version": "1.0.0",
-  "description": "A TS3 ServerQuery interface written in JavaScript",
+  "description": "A TS3 ServerQuery interface written in TypeScript",
   "main": "index.ts",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
-    "start": "ts-node index.ts --init"
+    "start": "ts-node index.ts --config=config.json --init"
   },
   "repository": {
     "type": "git",
