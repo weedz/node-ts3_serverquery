@@ -39,7 +39,7 @@ export default class DataStore {
         return currentCache.data;
     }
 
-    async fetchItem(cacheName: ItemCache, id:number) {
+    async fetchItem(cacheName: ItemCache, id: number) {
         const key = ItemKeyMap[cacheName];
         let cacheList = Cache.get(cacheName);
         let cache;
@@ -63,10 +63,10 @@ export default class DataStore {
         return cache.data;
     }
 
-    forceUpdateItem() {
+    forceUpdateItem(cacheName: ItemCache, id: number, data: any) {
         // TODO: implement..
     }
-    forceUpdateList() {
+    forceUpdateList(cacheName: ListCache, id: number, data: any) {
         // TODO: implement..
     }
 
