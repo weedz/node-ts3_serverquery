@@ -6,6 +6,7 @@ import * as path from "path";
 import Log from "./Log";
 import Connection from "./Connection";
 import PluginLoader from "./PluginLoader";
+import chalk from "chalk";
 
 export default class Client {
     connection: Connection;
@@ -53,11 +54,13 @@ export default class Client {
     }
     // Handle plugins
     broadcast(event: AllowedPluginEvents, params?: any) {
+        Log(`Broadcasting '${chalk.yellow(event)}'`, this.constructor.name, 5);
         for (let plugin of this.plugins.values()) {
             this.notify(plugin.plugin, event, params);
         }
     }
     notify(plugin: any, event: AllowedPluginEvents, params?: any) {
+        Log(`Sending notification '${chalk.yellow(event)}' to ${chalk.cyan(plugin.constructor.name)}`, this.constructor.name, 5);
         return new Promise( (resolve, reject) => {
             let result = true;
             if (typeof plugin[event] === "function") {
