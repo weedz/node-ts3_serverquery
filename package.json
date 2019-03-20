@@ -1,6 +1,6 @@
 {
   "name": "ts3_bot",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A TS3 ServerQuery interface written in TypeScript",
   "main": "index.ts",
   "directories": {
@@ -21,12 +21,12 @@
   },
   "homepage": "https://github.com/weedz/node-ts3_serverquery#readme",
   "dependencies": {
-    "@types/node": "^11.9.4",
+    "@types/node": "^11.11.4",
     "@types/semver": "^5.5.0",
     "chalk": "^2.4.2",
     "semver": "^5.6.0",
-    "ts-node": "^8.0.2",
-    "typescript": "^3.4.0-dev.20190220"
+    "ts-node": "^8.0.3",
+    "typescript": "^3.4.0-rc"
   },
   "devDependencies": {}
 }
