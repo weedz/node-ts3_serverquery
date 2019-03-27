@@ -83,7 +83,10 @@ export default class Connection {
 
         this.heartbeat = this.heartbeat.bind(this);
         this.connectionCallback = this.connectionCallback.bind(this);
-        this.errorHook = this.errorHook.bind(this);
+
+        this.registerHook("error", {
+            error: this.errorHook.bind(this)
+        });
 
         this.connection = this.init(config);
     }
@@ -96,6 +99,14 @@ export default class Connection {
     }
     ready() : boolean {
         return this.state === STATE.READY;
+    }
+    reconnect(config: BotConfig) : void {
+        this.connection = this.init(config);
+    }
+    disconnect() : void {
+        if (this.connected()) {
+            this.connection.destroy();
+        }
     }
 
     init(config: BotConfig) : Socket {
@@ -118,9 +129,6 @@ export default class Connection {
         }
         this.pingTimer = setInterval(this.heartbeat, 60000);
         this.state = STATE.INIT;
-        this.registerHook("error", {
-            error: this.errorHook
-        });
     }
 
     async heartbeat() {
@@ -237,10 +245,6 @@ export default class Connection {
             }
         }
     }
-
-    // checkValidCommand(cmd: TeamSpeakCommand): cmd is TeamSpeakCommand {
-        
-    // }
 
     getCommand() {
         return this.commandQueue.getCommand();

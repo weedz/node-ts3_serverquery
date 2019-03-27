@@ -21,6 +21,9 @@ export default class Queue {
     }
 
     empty() {
-        this.queue.splice(0, this.queue.length);
+        while (!this.isEmpty()) {
+            const command = this.shift();
+            command && command.reject("CANCELLED");
+        }
     }
 }

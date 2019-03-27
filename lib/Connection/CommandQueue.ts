@@ -33,12 +33,17 @@ export default class CommandQueue {
     }
 
     processQueue() {
-        if (!this.connection.ready()) {
+        if (!this.connection.connected()) {
+            // Empty queue and reject all "ongoing" commands
+            for (let i = 0; i < this.commandQueue.length; i++) {
+                this.clearQueue(i);
+            }
+        } else if (!this.connection.ready()) {
             return;
         }
-        for (let queueNr = 0, totalQueues = Object.keys(this.commandQueue).length; queueNr < totalQueues; queueNr++) {
-            if (!this.commandQueue[queueNr].isEmpty()) {
-                this.processQueueItem(this.commandQueue[queueNr].shift());
+        for (let queue of this.commandQueue) {
+            if (!queue.isEmpty()) {
+                this.processQueueItem(queue.shift());
                 break;
             }
         }

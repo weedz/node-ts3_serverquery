@@ -15,6 +15,20 @@ export default class CLI extends Plugin {
         this.registerCommand('init', null, () => {
             this.client.init();
         });
+        this.registerCommand('connect', null, () => {
+            if (!this.connection.connected()) {
+                this.connection.reconnect(client.config);
+            } else {
+                console.log("Already connected...");
+            }
+        });
+        this.registerCommand('disconnect', null, () => {
+            if (this.connection.connected()) {
+                this.connection.disconnect();
+            } else {
+                console.log("Already disconnected...");
+            }
+        });
         this.registerCommand('queueretry', null, () => {
             this.connection.retryCommand();
         });
@@ -91,20 +105,15 @@ export default class CLI extends Plugin {
 
     async onLine(line: string) {
         const [cmd, ...args] = line.trim().split(" ");
-        if (!this.connection.connected()) {
-            const status = this.connection.connecting() ? "Connecting" : "Disconnected";
-            console.log(`Status: ${status}`);
+        if (this.isCommand(cmd)) {
+            await this.executeCommand(cmd, args);
+        } else if (cmd === 'help') {
+            this.handleHelpCommand(args)
+        } else if (cmd === 'login') {
+            this.handleLoginCommand(args);
         } else {
-            if (this.isCommand(cmd)) {
-                await this.executeCommand(cmd, args);
-            } else if (cmd === 'help') {
-                this.handleHelpCommand(args)
-            } else if (cmd === 'login') {
-                this.handleLoginCommand(args);
-            } else {
-                // TODO: runtime check to make sure cmd is a valid command
-                this.sendCommand(cmd as any, args);
-            }
+            // TODO: runtime check to make sure cmd is a valid command
+            this.sendCommand(cmd as any, args);
         }
         this.rl.prompt();
     }
@@ -122,7 +131,7 @@ export default class CLI extends Plugin {
             try {
                 await this.client.login(args[0], args[1]);
             } catch (error) {
-                console.warn("Invalid login");
+                console.warn(`Error: ${error}`);
             }
         } else {
             console.warn("Needs 2 parameters: login <username> <password>");
