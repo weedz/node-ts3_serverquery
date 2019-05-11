@@ -297,7 +297,7 @@ export default class Connection {
      * @param options Options..
      * @param priority 0=highest, 2=lowest
      */
-    send<K extends keyof TSCommandList>(cmd: K, args?: TSCommandList[K]|null, options: CommandOptions = {}, priority: number = 0): Promise<any> {
+    send<K extends keyof TSCommandList>(cmd: K, args?: TSCommandList[K], options: CommandOptions = {}, priority: number = 0): Promise<any> {
         return new Promise((resolve, reject) => {
             if (!cmd || typeof cmd !== "string") {
                 reject();
