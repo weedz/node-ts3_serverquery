@@ -6,6 +6,7 @@ import * as path from "path";
 import Log from "./Log";
 import Connection from "./Connection";
 import PluginLoader from "./PluginLoader";
+import NodePluginLoader from "./PluginLoader/Handlers/NodePluginHandler";
 import chalk from "chalk";
 
 export default class Client {
@@ -26,7 +27,20 @@ export default class Client {
 
         this.plugins = new Map();
 
-        PluginLoader(config.plugins, path.resolve('./plugins'), { connection, client: this }, (str:string) => (Log(str, 'PluginLoader', 5))).then(plugins => {
+        PluginLoader(
+            config.plugins,
+            path.resolve('./plugins'),
+            {
+                api: {
+                    connection,
+                    client: this
+                },
+                log: (str:string) => (Log(str, 'PluginLoader', 5)),
+                handlers: {
+                    default: NodePluginLoader
+                }
+            }
+        ).then(plugins => {
             this.plugins = plugins;
         });
 

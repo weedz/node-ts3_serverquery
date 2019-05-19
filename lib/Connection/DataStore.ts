@@ -15,6 +15,7 @@ const ItemKeyMap: {[listName in ItemCache]: keyof TSCommandList[listName]} = <co
     channelinfo: "cid"
 };
 
+// TODO: use WeakRef/WeakMap to allow garbage collector to "cleanup" cache
 const Cache = new Map();
 
 export default class DataStore {

@@ -1,11 +1,12 @@
 import { SemVer, satisfies, Range } from "semver";
 import chalk from "chalk";
 
-interface PluginManifest {
+export interface PluginManifest {
     name: string,
     version: SemVer | string,
     dependencies: PluginDependencies,
-    pluginPath?: string
+    pluginPath?: string,
+    type?: string
 }
 
 interface PluginDependencies {
@@ -47,14 +48,16 @@ async function checkDependencies(manifest: PluginManifest, pluginPath: string, e
     }
 }
 
-async function loadPlugin(manifest: PluginManifest, pluginPath: string, pluginAPI: any) {
-    const plugin = await import(`${pluginPath}/${manifest.pluginPath || manifest.name}/index.ts`);
-    return new plugin.default(pluginAPI);
-}
-
-export default async function Loader(pluginList: string[], pluginPath: string, pluginAPI: any, Log = console.log) {
+export default async function Loader(pluginList: string[], pluginPath: string, options: {
+    log: Function,
+    api: any,
+    handlers: {
+        default: Function,
+        [type: string]: Function
+    }
+}) {
     const enabledPlugins = new Map<string, PluginManifest>();
-    Log(`Checking enabled plugins...`);
+    options.log(`Checking enabled plugins...`);
     for (const pluginName of pluginList) {
         try {
             const manifest = await getPluginManifest(pluginName, pluginPath);
@@ -67,22 +70,27 @@ export default async function Loader(pluginList: string[], pluginPath: string, p
             process.exit(1);
         }
     }
-    Log(`Checking dependencies...`);
+    options.log(`Checking dependencies...`);
     for (const manifest of enabledPlugins.values()) {
         if (manifest.dependencies) {
             await checkDependencies(manifest, pluginPath, enabledPlugins);
         }
     }
-    Log(`Loading plugins...`);
+    options.log(`Loading plugins...`);
     const plugins = new Map<string, any>();
     for (const plugin of enabledPlugins.values()) {
-        Log(`${chalk.cyan(plugin.name)} [${plugin.version.toString()}]`);
+        options.log(`${chalk.cyan(plugin.name)} [${plugin.version.toString()}]`);
+
+        let handler = plugin.type && options.handlers[plugin.type]
+            ? options.handlers[plugin.type]
+            : options.handlers.default;
+
         const pluginObject = {
-            plugin: await loadPlugin(plugin, pluginPath, pluginAPI),
+            plugin: await handler(plugin, pluginPath, options.api),
             manifest: plugin
         };
         plugins.set(plugin.name, pluginObject);
     }
-    Log(`${chalk.green("Done!")}`);
+    options.log(`${chalk.green("Done!")}`);
     return plugins;
 }
