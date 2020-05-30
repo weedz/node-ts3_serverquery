@@ -1,4 +1,3 @@
-/// <reference path="lib/Types/Config.d.ts" />
 import Client from "./lib/Client";
 import Connection from "./lib/Connection";
 

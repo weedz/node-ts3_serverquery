@@ -1,3 +1,5 @@
+import { Command } from "../Connection";
+
 export default class Queue {
     queue: Command[];
     constructor() {

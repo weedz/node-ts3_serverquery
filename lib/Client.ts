@@ -1,12 +1,17 @@
-/// <reference path="Types/Config.d.ts" />
-/// <reference path="Types/Types.d.ts" />
-/// <reference path="Types/TeamSpeak.d.ts" />
-
 import * as path from "path";
 import Log from "./Log";
 import Connection from "./Connection";
 import PluginLoader from "./PluginLoader";
 import * as chalk from "chalk";
+import { TS_whoami } from "./Types/TeamSpeak";
+import { BotConfig } from "./Types/Config";
+
+type AllowedPluginEvents = 
+    |"init"
+    |"connected"
+    |"disconnected"
+    |"reload"
+    |"unload";
 
 export default class Client {
     connection: Connection;

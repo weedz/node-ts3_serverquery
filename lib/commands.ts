@@ -1,4 +1,5 @@
-/// <reference path="Types/TeamSpeak.d.ts" />
+import { TS_Events } from "./Connection";
+import { TS_InstanceProperties, TS_BindingSubsystem, TS_Flag, TS_VirtualServerProperties, TS_PermissionGroupDatabaseTypes, TS_ChannelProperties, TS_ClientProperties } from "./Types/TeamSpeak";
 
 interface PermissionParam {
     permvalue: number|string,

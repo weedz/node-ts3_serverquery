@@ -1,8 +1,3 @@
-/// <reference path="Types/Config.d.ts" />
-/// <reference path="Types/Types.d.ts" />
-/// <reference path="Types/Server.d.ts" />
-/// <reference path="Types/Events.d.ts" />
-
 import {
     createConnection, Socket
 } from "net";
@@ -17,6 +12,49 @@ import {
 } from "./Connection/Utils";
 import Log from "./Log";
 import { TSCommandList } from './commands';
+import { BotConfig } from "./Types/Config";
+
+type CommandOptions = {
+    noOutput?: boolean,
+    expectData?: boolean,
+    mustReturnOK?: boolean
+};
+
+export type Command = {
+    label: string;
+    commandStr: string;
+    command: Function,
+    resolve: Function,
+    reject: Function,
+    options: CommandOptions,
+    failed?: boolean
+};
+
+interface TS_ErrorState {
+    id: string|number,
+    msg: string
+}
+
+export type TS_Events = 
+    |"error"
+    |"server"
+    |"channel"
+    |"textserver"
+    |"textchannel"
+    |"textprivate";
+
+type TS_ValidEventHooks = 
+    |"error"
+    |"notifyclientleftview"
+    |"notifycliententerview"
+    |"notifyclientmoved";
+
+interface TS_EventHooks {
+    "error"?:Function;
+    "notifyclientleftview"?:Function;
+    "notifycliententerview"?:Function;
+    "notifyclientmoved"?:Function;
+}
 
 // constants
 enum STATE {

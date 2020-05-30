@@ -1,4 +1,4 @@
-declare type TSEvent_ClientMoved = {
+export type TSEvent_ClientMoved = {
     clid: number,
     ctid: number,
     reasonid: number,
@@ -8,7 +8,7 @@ declare type TSEvent_ClientMoved = {
     invokeruid?: string
 };
 
-declare type TSEvent_ClientLeftView = {
+export type TSEvent_ClientLeftView = {
     clid: number,
     cfid: number,
     ctid: number,
@@ -19,7 +19,7 @@ declare type TSEvent_ClientLeftView = {
     invokeruid?: string
 };
 
-declare type TSEvent_ClientEnterView = {
+export type TSEvent_ClientEnterView = {
     cfid: number,
     ctid: number,
     reasonid: number,

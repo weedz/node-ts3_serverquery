@@ -1,6 +1,14 @@
-/// <reference path="Types/Types.d.ts" />
 import * as chalk from "chalk";
 import * as config from "../config.json";
+
+export enum LogLevels {
+    CRITICAL = 0,
+    ERROR,
+    WARN,
+    INFO,
+    DEBUG,
+    DEBUG_ALL
+}
 
 const logLevelMap: {[loglevel:number]: chalk.Chalk} = {
     0: chalk.red.bold.underline,

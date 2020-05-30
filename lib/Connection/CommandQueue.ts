@@ -1,7 +1,6 @@
-/// <reference path="../Types/Server.d.ts" />
 import Log from '../Log';
 import Queue from './Queue';
-import Connection from '../Connection';
+import Connection, { Command } from '../Connection';
 
 export default class CommandQueue {
     currentCommand: Command;

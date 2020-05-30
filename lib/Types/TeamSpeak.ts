@@ -1,20 +1,20 @@
-declare type TS_Flag = boolean|0|1;
+export type TS_Flag = boolean|0|1;
 
 // Definitions
-declare enum TS_HostMessageMode {
+export enum TS_HostMessageMode {
     HostMessageMode_NONE = 0,   // 0: don't display anything
     HostMessageMode_LOG,        // 1: display message in chatlog
     HostMessageMode_MODAL,      // 2: display message in modal dialog
     HostMessageMode_MODALQUIT   // 3: display message in modal dialog and close connection
 }
 
-declare enum TS_HostBannerMode {
+export enum TS_HostBannerMode {
     HostBannerMode_NOADJUST = 0,    // 0: do not adjust
     HostBannerMode_IGNOREASPECT,    // 1: adjust but ignore aspect ratio (like TeamSpeak 2)
     HostBannerMode_KEEPASPECT       // 2: adjust and keep aspect ratio
 }
 
-declare enum TS_Codec {
+export enum TS_Codec {
     CODEC_SPEEX_NARROWBAND = 0, // 0: speex narrowband (mono, 16bit, 8kHz)
     CODEC_SPEEX_WIDEBAND,       // 1: speex wideband (mono, 16bit, 16kHz)
     CODEC_SPEEX_ULTRAWIDEBAND,  // 2: speex ultra-wideband (mono, 16bit, 32kHz)
@@ -23,37 +23,37 @@ declare enum TS_Codec {
     CODEC_OPUS_MUSIC
 }
 
-declare enum TS_CodecEncryptionMode {
+export enum TS_CodecEncryptionMode {
     CODEC_CRYPT_INDIVIDUAL = 0, // 0: configure per channel
     CODEC_CRYPT_DISABLED,       // 1: globally disabled
     CODEC_CRYPT_ENABLED         // 2: globally enabled
 }
 
-declare enum TS_TextMessageTargetMode {
+export enum TS_TextMessageTargetMode {
     TextMessageTarget_CLIENT = 1,   // 1: target is a client
     TextMessageTarget_CHANNEL,      // 2: target is a channel
     TextMessageTarget_SERVER        // 3: target is a virtual server
 }
 
-declare enum TS_LogLevel {
+export enum TS_LogLevel {
     LogLevel_ERROR = 1, // 1: everything that is really bad
     LogLevel_WARNING,   // 2: everything that might be bad
     LogLevel_DEBUG,     // 3: output that might help find a problem
     LogLevel_INFO       // 4: informational output
 }
 
-declare enum TS_ReasonIdentifier {
+export enum TS_ReasonIdentifier {
     REASON_KICK_CHANNEL = 4,    // 4: kick client from channel
     REASON_KICK_SERVER          // 5: kick client from server
 }
 
-declare enum TS_PermissionGroupDatabaseTypes {
+export enum TS_PermissionGroupDatabaseTypes {
     PermGroupDBTypeTemplate = 0,    // 0: template group (used for new virtual servers)
     PermGroupDBTypeRegular,         // 1: regular group (used for regular clients)
     PermGroupDBTypeQuery            // 2: global query group (used for ServerQuery clients)
 }
 
-declare enum TS_PermissionGroupTypes {
+export enum TS_PermissionGroupTypes {
     PermGroupTypeServerGroup = 0,   // 0: server group permission
     PermGroupTypeGlobalClient,      // 1: client specific permission
     PermGroupTypeChannel,           // 2: channel specific permission
@@ -61,14 +61,14 @@ declare enum TS_PermissionGroupTypes {
     PermGroupTypeChannelClient      // 4: channel-client specific permission
 }
 
-declare enum TS_TokenType {
+export enum TS_TokenType {
     TokenServerGroup = 0,   // 0: server group token (id1={groupID} id2=0)
     TokenChannelGroup       // 1: channel group token (id1={groupID} id2={channelID})
 }
 
-declare type TS_VirtualServerStatus = "online" | "virtual online" | "offline" | "booting up" | "shutting down" | string;
-declare type TS_BindingSubsystem = "voice" | "query" | "filetransfer";
-declare interface TS_whoami {
+export type TS_VirtualServerStatus = "online" | "virtual online" | "offline" | "booting up" | "shutting down" | string;
+export type TS_BindingSubsystem = "voice" | "query" | "filetransfer";
+export interface TS_whoami {
     virtualserver_status: string,
     virtualserver_id: number,
     virtualserver_unique_identifier: string,
@@ -82,14 +82,14 @@ declare interface TS_whoami {
     client_origin_server_id: number
 }
 
-declare interface TS_version {
+export interface TS_version {
     version: string,
     build: number,
     platform: string
 }
 
 // Client types
-declare interface TS_ClientInfo {
+export interface TS_ClientInfo {
     cid: number,
     client_idle_time: number,
     client_unique_identifier: string,
@@ -152,7 +152,7 @@ declare interface TS_ClientInfo {
     connection_client_ip: string
 }
 
-declare interface TS_ClientListItem {
+export interface TS_ClientListItem {
     clid: number;
     cid: number;
     client_database_id: number;
@@ -160,10 +160,10 @@ declare interface TS_ClientListItem {
     client_type: number;
 }
 
-declare type TS_ClientList = Array<TS_ClientListItem>;
+export type TS_ClientList = Array<TS_ClientListItem>;
 
 // Channel types
-declare interface TS_ChannelInfo {
+export interface TS_ChannelInfo {
     pid: number,
     channel_name: string,
     channel_topic: string,
@@ -194,7 +194,7 @@ declare interface TS_ChannelInfo {
     seconds_empty: number
 }
 
-declare interface TS_ChannelListItem {
+export interface TS_ChannelListItem {
     cid: number,
     pid: number,
     channel_order: number,
@@ -203,9 +203,9 @@ declare interface TS_ChannelListItem {
     channel_needed_subscribe_power: number
 }
 
-declare type TS_ChannelList = Array<TS_ChannelListItem>;
+export type TS_ChannelList = Array<TS_ChannelListItem>;
 
-declare interface TS_InstanceProperties {
+export interface TS_InstanceProperties {
     readonly instance_uptime: number,
     readonly host_timestamp_utc: string,
     readonly virtualservers_running_total: number,
@@ -236,7 +236,7 @@ declare interface TS_InstanceProperties {
     serverinstance_serverquery_flood_ban_time: number
 }
 
-declare interface TS_VirtualServerProperties {
+export interface TS_VirtualServerProperties {
     virtualserver_name: string,
     virtualserver_welcomemessage: string,
     virtualserver_maxclients: number,
@@ -322,7 +322,7 @@ declare interface TS_VirtualServerProperties {
     readonly virtualserver_filebase: string
 }
 
-declare interface TS_ChannelProperties {
+export interface TS_ChannelProperties {
     channel_name: string,
     channel_topic: string,
     channel_description: string,
@@ -350,7 +350,7 @@ declare interface TS_ChannelProperties {
     readonly cid: number,
 }
 
-declare interface TS_ClientProperties {
+export interface TS_ClientProperties {
     readonly client_unique_identifier: string,
     client_nickname: string,
     readonly client_version: string,
