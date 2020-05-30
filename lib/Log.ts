@@ -1,8 +1,8 @@
 /// <reference path="Types/Types.d.ts" />
-import chalk, { Chalk } from "chalk";
+import * as chalk from "chalk";
 import * as config from "../config.json";
 
-const logLevelMap: {[loglevel:number]: Chalk} = {
+const logLevelMap: {[loglevel:number]: chalk.Chalk} = {
     0: chalk.red.bold.underline,
     1: chalk.red,
     2: chalk.yellow,

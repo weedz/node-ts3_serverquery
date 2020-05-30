@@ -9,6 +9,6 @@
         "types": [
             "node"
         ],
-        "outDir": "./built"
+        "outDir": "./dist"
     }
 }

@@ -1,5 +1,5 @@
 import { SemVer, satisfies, Range } from "semver";
-import chalk from "chalk";
+import * as chalk from "chalk";
 
 interface PluginManifest {
     name: string,

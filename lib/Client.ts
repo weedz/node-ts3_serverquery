@@ -6,7 +6,7 @@ import * as path from "path";
 import Log from "./Log";
 import Connection from "./Connection";
 import PluginLoader from "./PluginLoader";
-import chalk from "chalk";
+import * as chalk from "chalk";
 
 export default class Client {
     connection: Connection;

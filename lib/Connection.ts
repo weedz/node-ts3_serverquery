@@ -6,7 +6,7 @@
 import {
     createConnection, Socket
 } from "net";
-import chalk from "chalk";
+import * as chalk from "chalk";
 import DataStore from "./Connection/DataStore";
 import CommandQueue from "./Connection/CommandQueue";
 import VALID_EVENTS from "./Connection/valid_events";
