@@ -1,5 +1,5 @@
 import { TS_Events } from "./Connection";
-import { TS_InstanceProperties, TS_BindingSubsystem, TS_Flag, TS_VirtualServerProperties, TS_PermissionGroupDatabaseTypes, TS_ChannelProperties, TS_ClientProperties } from "./Types/TeamSpeak";
+import { TS_InstanceProperties, TS_BindingSubsystem, TS_Flag, TS_VirtualServerProperties, TS_PermissionGroupDatabaseTypes, TS_ChannelProperties, TS_ClientProperties, TS_whoami } from "./Types/TeamSpeak";
 
 interface PermissionParam {
     permvalue: number|string,
@@ -602,4 +602,137 @@ export interface TSCommandList {
         cldbid: number
     },
     whoami: null
+}
+
+export interface TSReturnValue {
+    help: any
+    quit: any
+    login: any
+    logout: any
+    version: any
+    hostinfo: any
+    instanceinfo: any
+    instanceedit: any
+    use: any
+    bindinglist: any
+    serverlist: any
+    serveridgetbyport: any
+    serverdelete: any
+    servercreate: any
+    serverstart: any
+    serverstop: any
+    serverprocessstop: any
+    serverinfo: any
+    serverrequestconnectioninfo: any
+    servertemppasswordadd: any
+    servertemppassworddel: any
+    servertemppasswordlist: any
+    serveredit: any
+    servergrouplist: any
+    servergroupadd: any
+    servergroupdel: any
+    servergroupcopy: any
+    servergrouprename: any
+    servergrouppermlist: any
+    servergroupaddperm: any
+    servergroupdelperm: any
+    servergroupaddclient: any
+    servergroupdelclient: any
+    servergroupclientlist: any
+    servergroupsbyclientid: any
+    servergroupautoaddperm: any
+    servergroupautodelperm: any
+    serversnapshotcreate: any
+    serversnapshotdeploy: any
+    servernotifyregister: any
+    servernotifyunregister: any
+    sendtextmessage: any
+    logview: any
+    logadd: any
+    gm: any
+    channellist: any
+    channelinfo: any
+    channelfind: any
+    channelmove: any
+    channelcreate: any
+    channeldelete: any
+    channeledit: any
+    channelgrouplist: any
+    channelgroupadd: any
+    channelgroupdel: any
+    channelgroupcopy: any
+    channelgrouprename: any
+    channelgroupaddperm: any
+    channelgrouppermlist: any
+    channelgroupdelperm: any
+    channelgroupclientlist: any
+    setclientchannelgroup: any
+    tokenadd: any
+    tokendelete: any
+    tokenlist: any
+    tokenuse: any
+    channelpermlist: any
+    channeladdperm: any
+    channeldelperm: any
+    clientlist: any
+    clientinfo: any
+    clientfind: any
+    clientedit: any
+    clientdblist: any
+    clientdbinfo: any
+    clientdbfind: any
+    clientdbedit: any
+    clientdbdelete: any
+    clientgetids: any
+    clientgetdbidfromuid: any
+    clientgetnamefromuid: any
+    clientgetuidfromclid: any
+    clientgetnamefromdbid: any
+    clientsetserverquerylogin: any
+    clientupdate: any
+    clientmove: any
+    clientkick: any
+    clientpoke: any
+    clientpermlist: any
+    clientaddperm: any
+    clientdelperm: any
+    channelclientpermlist: any
+    channelclientaddperm: any
+    channelclientdelperm: any
+    permissionlist: any
+    permidgetbyname: any
+    permoverview: any
+    permget: any
+    permfind: any
+    permreset: any
+    privilegekeylist: any
+    privilegekeyadd: any
+    privilegekeydelete: any
+    privilegekeyuse: any
+    messagelist: any
+    messageadd: any
+    messagedel: any
+    messageget: any
+    messageupdateflag: any
+    complainlist: any
+    complainadd: any
+    complaindelall: any
+    complaindel: any
+    banclient: any
+    banlist: any
+    banadd: any
+    bandel: any
+    bandelall: any
+    ftinitupload: any
+    ftinitdownload: any
+    ftlist: any
+    ftgetfilelist: any
+    ftgetfileinfo: any
+    ftstop: any
+    ftdeletefile: any
+    ftcreatedir: any
+    ftrenamefile: any
+    customsearch: any
+    custominfo: any
+    whoami: TS_whoami
 }

@@ -4,15 +4,41 @@ import {
 import * as chalk from "chalk";
 import DataStore from "./Connection/DataStore";
 import CommandQueue from "./Connection/CommandQueue";
-import VALID_EVENTS from "./Connection/valid_events";
-import VALID_HOOKS from "./Connection/valid_hooks";
 import {
     parseArgsToString,
     parseParams
 } from "./Connection/Utils";
 import Log from "./Log";
-import { TSCommandList } from './commands';
+import { TSCommandList, TSReturnValue } from './commands';
 import { BotConfig } from "./Types/Config";
+import valid_events, { ValidHooks } from "./Connection/valid_events";
+
+export type ValidEvents = {
+    error: {
+        [ValidHooks.error]: true,
+    },
+    server: {
+        [ValidHooks.notifyclientleftview]: true,
+        [ValidHooks.notifycliententerview]: true,
+        [ValidHooks.notifyserveredited]: true,
+    },
+    channel: {
+        [ValidHooks.notifyclientmoved]: true,
+        [ValidHooks.notifyclientleftview]: true,
+        [ValidHooks.notifycliententerview]: true,
+        [ValidHooks.notifychanneledited]: true,
+        [ValidHooks.notifychanneldeleted]: true,
+    },
+    textserver: {
+        [ValidHooks.notifytextmessage]: true,
+    },
+    textchannel: {
+        [ValidHooks.notifytextmessage]: true,
+    },
+    textprivate: {
+        [ValidHooks.notifytextmessage]: true,
+    },
+}
 
 type CommandOptions = {
     noOutput?: boolean,
@@ -33,27 +59,6 @@ export type Command = {
 interface TS_ErrorState {
     id: string|number,
     msg: string
-}
-
-export type TS_Events = 
-    |"error"
-    |"server"
-    |"channel"
-    |"textserver"
-    |"textchannel"
-    |"textprivate";
-
-type TS_ValidEventHooks = 
-    |"error"
-    |"notifyclientleftview"
-    |"notifycliententerview"
-    |"notifyclientmoved";
-
-interface TS_EventHooks {
-    "error"?:Function;
-    "notifyclientleftview"?:Function;
-    "notifycliententerview"?:Function;
-    "notifyclientmoved"?:Function;
 }
 
 // constants
@@ -91,7 +96,7 @@ const SHOULD_PARSE_PARAMS: {[key:string]: number} = {
 
 export default class Connection {
     state: STATE;
-    registeredHooks: { [event: string]: HookList };
+    registeredHooks: { [hook: string]: HookList };
     REGISTERED_EVENTS: { [event: string]: boolean };
     store: DataStore;
     commandQueue: CommandQueue;
@@ -123,7 +128,7 @@ export default class Connection {
         this.connectionCallback = this.connectionCallback.bind(this);
 
         this.registerHook("error", {
-            error: this.errorHook.bind(this)
+            [ValidHooks.error]: this.errorHook.bind(this)
         });
 
         this.connection = this.init(config);
@@ -263,14 +268,10 @@ export default class Connection {
     }
 
     handleRecievedLine(line: string, event: string) {
-        const params = VALID_HOOKS[event] ?
-            parseParams(line, 1, event.length + 1) :
-            parseParams(line, SHOULD_PARSE_PARAMS[this.commandQueue.getCommand().label]);
-
-        if (VALID_HOOKS[event]) {
-            this.recievedEvent(params, event, line);
+        if (event in ValidHooks) {
+            this.recievedEvent(parseParams(line, 1, event.length + 1), event, line);
         } else {
-            this.commandResult = params;
+            this.commandResult = parseParams(line, SHOULD_PARSE_PARAMS[this.commandQueue.getCommand().label]);
         }
     }
 
@@ -335,7 +336,7 @@ export default class Connection {
      * @param options Options..
      * @param priority 0=highest, 2=lowest
      */
-    send<K extends keyof TSCommandList>(cmd: K, args?: TSCommandList[K], options: CommandOptions = {}, priority: number = 0): Promise<any> {
+    send<K extends keyof TSCommandList>(cmd: K, args?: TSCommandList[K], options: CommandOptions = {}, priority: number = 0): Promise<TSReturnValue[K]> {
         return new Promise((resolve, reject) => {
             if (!cmd || typeof cmd !== "string") {
                 reject();
@@ -356,10 +357,10 @@ export default class Connection {
         });
     }
 
-    registerHook(event: TS_Events, callbacks: TS_EventHooks, id: string = "connection") {
-        for (let hook of Object.keys(callbacks)) {
-            if (VALID_EVENTS[event][hook] ) {
-                this._pushHook(hook as TS_ValidEventHooks, id, callbacks[hook as TS_ValidEventHooks] as Function);
+    registerHook<K extends keyof ValidEvents>(event: K, callbacks: { [key in keyof ValidEvents[K]]: Function}, id: string = "connection") {
+        for (const hook of Object.keys(callbacks) as Array<keyof ValidEvents[K]>) {
+            if (valid_events[event][hook]) {
+                this._pushHook(hook as any, id, callbacks[hook]);
             } else {
                 Log(`Invalid hook: ${hook}, event: ${event}`, this.constructor.name, 2);
                 return false;
@@ -367,7 +368,7 @@ export default class Connection {
         }
         return true;
     }
-    _pushHook(hook: TS_ValidEventHooks, id: string, callback: Function) {
+    _pushHook<T extends ValidHooks>(hook: T, id: string, callback: Function) {
         if (this.registeredHooks[hook] === undefined) {
             this.registeredHooks[hook] = {};
         }
@@ -377,8 +378,8 @@ export default class Connection {
         this.registeredHooks[hook][id].push(callback);
     }
 
-    registerEvent(event: TS_Events, options: object|null, callbacks: TS_EventHooks, id: string) {
-        if (VALID_EVENTS[event]) {
+    registerEvent<K extends keyof ValidEvents>(event: K, options: object|null, callbacks: { [key in keyof ValidEvents[K]]: Function}, id: string) {
+        if (valid_events[event]) {
             if (this.registerHook(event, callbacks, id)) {
                 if (!this.REGISTERED_EVENTS[event]) {
                     this.REGISTERED_EVENTS[event] = true;
@@ -391,9 +392,9 @@ export default class Connection {
         }
     }
 
-    unregisterHook(event: TS_Events, hook: TS_ValidEventHooks, id: string) {
+    unregisterHook<K extends keyof ValidEvents>(event: K, hook: ValidHooks, id: string) {
         if (
-            VALID_EVENTS[event][hook] &&
+            valid_events[event][hook] &&
             this.registeredHooks[hook] &&
             this.registeredHooks[hook][id]
         ) {
@@ -403,8 +404,8 @@ export default class Connection {
             }
         }
     }
-    unregisterEvent(event: TS_Events, hooks: TS_ValidEventHooks[], id: string) {
-        if (VALID_EVENTS[event]) {
+    unregisterEvent<K extends keyof ValidEvents>(event: K, hooks: ValidHooks[], id: string) {
+        if (valid_events[event]) {
             for (let hook of hooks) {
                 this.unregisterHook(event, hook, id);
             }

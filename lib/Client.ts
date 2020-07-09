@@ -1,7 +1,8 @@
 import * as path from "path";
 import Log from "./Log";
 import Connection from "./Connection";
-import PluginLoader from "./PluginLoader";
+import PluginLoader from "@weedzcokie/plugin-loader";
+import { NodeHandler } from "@weedzcokie/plugin-loader";
 import * as chalk from "chalk";
 import { TS_whoami } from "./Types/TeamSpeak";
 import { BotConfig } from "./Types/Config";
@@ -31,7 +32,16 @@ export default class Client {
 
         this.plugins = new Map();
 
-        PluginLoader(config.plugins, path.resolve('./plugins'), { connection, client: this }, (str:string) => (Log(str, 'PluginLoader', 5))).then(plugins => {
+        PluginLoader(config.plugins, path.resolve('./plugins'), {
+            api: {
+                connection,
+                client: this,
+            },
+            log: (str:string) => (Log(str, 'PluginLoader', 5)),
+            handlers: {
+                default: NodeHandler
+            }
+        }).then(plugins => {
             this.plugins = plugins;
         });
 
@@ -115,7 +125,7 @@ export default class Client {
                 })
             ])
             .then(() => this.connection.send("whoami"))
-            .then( (me: TS_whoami) => {
+            .then( (me) => {
                 this.me = me;
                 this.inited = true;
                 Log("Init finished!", this.constructor.name, 3);

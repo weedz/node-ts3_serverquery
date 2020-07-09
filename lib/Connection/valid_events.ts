@@ -1,10 +1,19 @@
-const valid_events: {
-    [event:string]: {
-        [id:string]: boolean
-    }
-} = {
+import { ValidEvents } from "../Connection"
+
+export enum ValidHooks {
+    error,
+    notifyclientleftview,
+    notifycliententerview,
+    notifyserveredited,
+    notifyclientmoved,
+    notifychanneledited,
+    notifychanneldeleted,
+    notifytextmessage,
+};
+
+const valid_events: {[event in keyof ValidEvents]: any} = {
     error: {
-        error: true
+        [ValidHooks.error]: true
     },
     server: {
         notifyclientleftview: true,
