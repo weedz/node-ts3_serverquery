@@ -1,11 +1,11 @@
 import * as path from "path";
 import Log from "./Log";
 import Connection from "./Connection";
-import PluginLoader from "@weedzcokie/plugin-loader";
-import { NodeHandler } from "@weedzcokie/plugin-loader";
+import PluginLoader, { PluginObject, NodeHandler } from "@weedzcokie/plugin-loader";
 import * as chalk from "chalk";
 import { TS_whoami } from "./Types/TeamSpeak";
 import { BotConfig } from "./Types/Config";
+import Plugin from "./Plugin";
 
 type AllowedPluginEvents = 
     |"init"
@@ -16,7 +16,7 @@ type AllowedPluginEvents =
 
 export default class Client {
     connection: Connection;
-    plugins: Map<string, any>;
+    plugins: Map<string, PluginObject<Plugin>>;
     config: BotConfig;
     commands: object;
     inited: boolean;
@@ -32,12 +32,13 @@ export default class Client {
 
         this.plugins = new Map();
 
-        PluginLoader(config.plugins, path.resolve('./plugins'), {
+        PluginLoader<Plugin>(config.plugins, {
             api: {
                 connection,
                 client: this,
             },
-            log: (str:string) => (Log(str, 'PluginLoader', 5)),
+            path: path.resolve('./plugins'),
+            log: (str:string) => (Log(str, 'PluginLoader', 3)),
             handlers: {
                 default: NodeHandler
             }
@@ -70,13 +71,13 @@ export default class Client {
     // Handle plugins
     broadcast(event: AllowedPluginEvents, params?: any) {
         Log(`Broadcasting '${chalk.yellow(event)}'`, this.constructor.name, 5);
-        for (let plugin of this.plugins.values()) {
+        for (const plugin of this.plugins.values()) {
             this.notify(plugin.plugin, event, params);
         }
     }
     notify(plugin: any, event: AllowedPluginEvents, params?: any) {
         Log(`Sending notification '${chalk.yellow(event)}' to ${chalk.cyan(plugin.constructor.name)}`, this.constructor.name, 5);
-        return new Promise( (resolve, reject) => {
+        return new Promise<void>( (resolve, reject) => {
             let result = true;
             if (typeof plugin[event] === "function") {
                 const pluginResponse = plugin[event](params);
@@ -97,7 +98,7 @@ export default class Client {
             plugins[plugin] = {
                 loaded: true
             };
-            plugins[plugin].version = this.plugins.get(plugin).manifest.version.toString();
+            plugins[plugin].version = this.plugins.get(plugin)?.manifest.version.toString();
         }
         return plugins;
     }

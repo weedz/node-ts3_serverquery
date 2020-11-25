@@ -11,34 +11,8 @@ import {
 import Log from "./Log";
 import { TSCommandList, TSReturnValue } from './commands';
 import { BotConfig } from "./Types/Config";
-import valid_events, { ValidHooks } from "./Connection/valid_events";
+import valid_events, { ValidEvents, EventHooks, ValidHooks } from "./Connection/valid_events";
 
-export type ValidEvents = {
-    error: {
-        [ValidHooks.error]: true,
-    },
-    server: {
-        [ValidHooks.notifyclientleftview]: true,
-        [ValidHooks.notifycliententerview]: true,
-        [ValidHooks.notifyserveredited]: true,
-    },
-    channel: {
-        [ValidHooks.notifyclientmoved]: true,
-        [ValidHooks.notifyclientleftview]: true,
-        [ValidHooks.notifycliententerview]: true,
-        [ValidHooks.notifychanneledited]: true,
-        [ValidHooks.notifychanneldeleted]: true,
-    },
-    textserver: {
-        [ValidHooks.notifytextmessage]: true,
-    },
-    textchannel: {
-        [ValidHooks.notifytextmessage]: true,
-    },
-    textprivate: {
-        [ValidHooks.notifytextmessage]: true,
-    },
-}
 
 type CommandOptions = {
     noOutput?: boolean,
@@ -97,7 +71,7 @@ const SHOULD_PARSE_PARAMS: {[key:string]: number} = {
 export default class Connection {
     state: STATE;
     registeredHooks: { [hook: string]: HookList };
-    REGISTERED_EVENTS: { [event: string]: boolean };
+    REGISTERED_EVENTS: { [event in ValidEvents]?: boolean };
     store: DataStore;
     commandQueue: CommandQueue;
     commandResult: boolean | object;
@@ -127,8 +101,8 @@ export default class Connection {
         this.heartbeat = this.heartbeat.bind(this);
         this.connectionCallback = this.connectionCallback.bind(this);
 
-        this.registerHook("error", {
-            [ValidHooks.error]: this.errorHook.bind(this)
+        this.registerHook(ValidEvents.error, {
+            error: this.errorHook
         });
 
         this.connection = this.init(config);
@@ -185,7 +159,7 @@ export default class Connection {
         Log(`Ping: ${ping}ms`, this.constructor.name, 5);
     }
 
-    errorHook(params: TS_ErrorState) {
+    errorHook = (params: TS_ErrorState) => {
         if (params.id !== '0') {
             const command = this.commandQueue.getCommand();
             if (command) {
@@ -322,7 +296,7 @@ export default class Connection {
         this.state = STATE.AWAITING_DATA;
         // TODO: change how we log this, should be opt-in if we should log to level 3
         let logLevel = this.commandQueue.getCommand().options.noOutput ? 5 : 4;
-        Log(`writeRaw(): ${data.replace("\r\n", "\\r\\n")}`, this.constructor.name, logLevel);
+        Log(`writeRaw(${data.replace("\r\n", "\\r\\n")})`, this.constructor.name, logLevel);
         this.connection.write(Buffer.from(data, 'utf8'));
     }
 
@@ -357,10 +331,10 @@ export default class Connection {
         });
     }
 
-    registerHook<K extends keyof ValidEvents>(event: K, callbacks: { [key in keyof ValidEvents[K]]: Function}, id: string = "connection") {
-        for (const hook of Object.keys(callbacks) as Array<keyof ValidEvents[K]>) {
-            if (valid_events[event][hook]) {
-                this._pushHook(hook as any, id, callbacks[hook]);
+    registerHook<E extends ValidEvents, H extends EventHooks[E]>(event: E, callbacks: { [key in H]?: Function}, id: string = "connection") {
+        for (const hook of Object.keys(callbacks) as Array<H>) {
+            if (hook in valid_events[event]) {
+                this._pushHook(hook as any, id, callbacks[hook] as Function);
             } else {
                 Log(`Invalid hook: ${hook}, event: ${event}`, this.constructor.name, 2);
                 return false;
@@ -368,7 +342,7 @@ export default class Connection {
         }
         return true;
     }
-    _pushHook<T extends ValidHooks>(hook: T, id: string, callback: Function) {
+    _pushHook(hook: string, id: string, callback: Function) {
         if (this.registeredHooks[hook] === undefined) {
             this.registeredHooks[hook] = {};
         }
@@ -378,7 +352,7 @@ export default class Connection {
         this.registeredHooks[hook][id].push(callback);
     }
 
-    registerEvent<K extends keyof ValidEvents>(event: K, options: object|null, callbacks: { [key in keyof ValidEvents[K]]: Function}, id: string) {
+    registerEvent<E extends ValidEvents, H extends EventHooks[E]>(event: E, options: object|null, callbacks: { [key in H]?: Function}, id: string) {
         if (valid_events[event]) {
             if (this.registerHook(event, callbacks, id)) {
                 if (!this.REGISTERED_EVENTS[event]) {
@@ -392,9 +366,9 @@ export default class Connection {
         }
     }
 
-    unregisterHook<K extends keyof ValidEvents>(event: K, hook: ValidHooks, id: string) {
+    unregisterHook<E extends ValidEvents, H extends EventHooks[E]>(event: E, hook: H, id: string) {
         if (
-            valid_events[event][hook] &&
+            hook in valid_events[event] &&
             this.registeredHooks[hook] &&
             this.registeredHooks[hook][id]
         ) {
@@ -404,7 +378,7 @@ export default class Connection {
             }
         }
     }
-    unregisterEvent<K extends keyof ValidEvents>(event: K, hooks: ValidHooks[], id: string) {
+    unregisterEvent<E extends ValidEvents, H extends EventHooks[E]>(event: E, hooks: H[], id: string) {
         if (valid_events[event]) {
             for (let hook of hooks) {
                 this.unregisterHook(event, hook, id);

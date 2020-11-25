@@ -1,4 +1,4 @@
-import { TS_Events } from "./Connection";
+import { ValidEvents } from "./Connection/valid_events";
 import { TS_InstanceProperties, TS_BindingSubsystem, TS_Flag, TS_VirtualServerProperties, TS_PermissionGroupDatabaseTypes, TS_ChannelProperties, TS_ClientProperties, TS_whoami } from "./Types/TeamSpeak";
 
 interface PermissionParam {
@@ -144,7 +144,7 @@ export interface TSCommandList {
     serversnapshotcreate: null,
     serversnapshotdeploy: any,
     servernotifyregister: {
-        event: TS_Events,
+        event: ValidEvents,
         id?: number
     },
     servernotifyunregister: null,

@@ -2,21 +2,28 @@ import * as fs from 'fs';
 import Log from './Log';
 import Connection from './Connection';
 import Client from './Client';
+import { PluginBase } from '@weedzcokie/plugin-loader';
 
-export default class Plugin {
+export type PluginApi = {
+    connection: Connection
+    client: Client
+}
+
+export default abstract class Plugin extends PluginBase<PluginApi> {
     config: any;
-    connection: Connection;
-    client: Client;
+    protected connection: Connection;
+    protected client: Client;
+    
+    init?(): void;
+    connected?(): void;
+    disconnected?(): void;
+    reload?(): void;
+    unload?(): void;
 
-    "init":Function;
-    "connected":Function;
-    "disconnected":Function;
-    "reload":Function;
-    "unload":Function;
-
-    constructor(connection: Connection, client: Client) {
-        this.connection = connection;
-        this.client = client;
+    constructor(api: PluginApi, deps?: any) {
+        super(api, deps);
+        this.connection = api.connection;
+        this.client = api.client;
     }
 }
 

@@ -15,7 +15,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/weedz/node-ts3_serverquery/issues"
   },
@@ -23,11 +23,10 @@
   "dependencies": {
     "@types/node": "^14.0.20",
     "@types/semver": "^7.3.1",
-    "@weedzcokie/plugin-loader": "^1.0.2",
+    "@weedzcokie/plugin-loader": "^2.3.0",
     "chalk": "^4.1.0",
     "semver": "^7.3.2",
-    "ts-node": "^8.10.2",
-    "typescript": "^3.9.6"
-  },
-  "devDependencies": {}
+    "ts-node": "^9.0.0",
+    "typescript": "^4.1.2"
+  }
 }

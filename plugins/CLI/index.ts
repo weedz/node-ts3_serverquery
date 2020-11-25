@@ -1,23 +1,18 @@
 import Plugin from "../../lib/Plugin";
 import { createInterface, Interface } from "readline";
 import { TSCommandList } from '../../lib/commands';
-import Connection from "../../lib/Connection";
-import Client from "../../lib/Client";
 
 export default class CLI extends Plugin {
-    commands: {[cmd:string]: any};
-    rl: Interface;
-    config: null;
+    commands: {[cmd:string]: any} = {};
+    rl!: Interface;
 
-    constructor({ connection, client }: { connection: Connection, client: Client}) {
-        super(connection, client);
-        this.commands = {};
+    init() {
         this.registerCommand('init', null, () => {
             this.client.init();
         });
         this.registerCommand('connect', null, () => {
             if (!this.connection.connected()) {
-                this.connection.reconnect(client.config);
+                this.connection.reconnect(this.client.config);
             } else {
                 console.log("Already connected...");
             }
@@ -61,20 +56,17 @@ export default class CLI extends Plugin {
         //     this.client.unloadPlugin(plugin);
         // });
 
-        this.handleAutoCompletion = this.handleAutoCompletion.bind(this);
-        this.onLine = this.onLine.bind(this);
-
         // commandline interface
-        this.rl = createInterface({
-            input: process.stdin,
-            output: process.stdout,
-            prompt: '> ',
-            // completer: this.handleAutoCompletion
-        })
-        .on('line', this.onLine);
+        // this.rl = createInterface({
+        //     input: process.stdin,
+        //     output: process.stdout,
+        //     prompt: '> ',
+        //     // completer: this.handleAutoCompletion
+        // })
+        // .on('line', this.onLine);
     }
 
-    handleAutoCompletion(line: string) {
+    handleAutoCompletion = (line: string) => {
         const words = line.split(" ");
         // TODO: fix autocompletion for TSCommands
         // const completions = this.connection.connected()
@@ -103,7 +95,7 @@ export default class CLI extends Plugin {
         }
     }
 
-    async onLine(line: string) {
+    onLine = async (line: string) => {
         const [cmd, ...args] = line.trim().split(" ");
         if (this.isCommand(cmd)) {
             await this.executeCommand(cmd, args);

@@ -6,9 +6,6 @@
         "strict": true,
         "resolveJsonModule": true,
         "removeComments": true,
-        "types": [
-            "node"
-        ],
         "outDir": "./dist"
     }
 }
