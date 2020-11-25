@@ -69,60 +69,46 @@ const SHOULD_PARSE_PARAMS: {[key:string]: number} = {
 };
 
 export default class Connection {
-    state: STATE;
-    registeredHooks: { [hook: string]: HookList };
-    REGISTERED_EVENTS: { [event in ValidEvents]?: boolean };
+    private state: STATE = STATE.CLOSED;
+    private registeredHooks: { [hook: string]: HookList } = {};
+    private REGISTERED_EVENTS: { [event in ValidEvents]?: boolean } = {};
     store: DataStore;
-    commandQueue: CommandQueue;
-    commandResult: boolean | object;
-    buffer: string;
-    pingTimer: null | NodeJS.Timeout;
-    connection: Socket;
+    private commandQueue: CommandQueue;
+    private commandResult: boolean | object = {};
+    private buffer: string = "";
+    private pingTimer: null | NodeJS.Timeout = null;
+    private socket: Socket;
 
     constructor(config: BotConfig) {
-        this.state = STATE.CLOSED;
-        this.registeredHooks = {};
-        this.REGISTERED_EVENTS = {};
-
         this.store = new DataStore(this);
         this.commandQueue = new CommandQueue(this);
-        this.commandResult = {};
-
-        this.buffer = "";
-
-        this.pingTimer = null;
-
-        this.onError = this.onError.bind(this);
-        this.onLookup = this.onLookup.bind(this);
-        this.onTimeout = this.onTimeout.bind(this);
-        this.onData = this.onData.bind(this);
-        this.onClose = this.onClose.bind(this);
-
-        this.heartbeat = this.heartbeat.bind(this);
-        this.connectionCallback = this.connectionCallback.bind(this);
 
         this.registerHook(ValidEvents.error, {
             error: this.errorHook
         });
 
-        this.connection = this.init(config);
+        this.socket = this.init(config);
+    }
+
+    socketOn(event: string, cb: (...args: any[]) => void) {
+        this.socket.on(event, cb);
     }
 
     connected() : boolean {
         return this.state !== STATE.CLOSED;
     }
     connecting() : boolean {
-        return this.connection.connecting;
+        return this.socket.connecting;
     }
     ready() : boolean {
         return this.state === STATE.READY;
     }
     reconnect(config: BotConfig) : void {
-        this.connection = this.init(config);
+        this.socket = this.init(config);
     }
     disconnect() : void {
         if (this.connected()) {
-            this.connection.destroy();
+            this.socket.destroy();
         }
     }
 
@@ -138,7 +124,7 @@ export default class Connection {
             .on('data', this.onData)
             .on('close', this.onClose);
     }
-    connectionCallback() {
+    connectionCallback = () => {
         Log("Connected!", this.constructor.name);
         // Send "ping" every minute
         if (this.pingTimer) {
@@ -148,7 +134,7 @@ export default class Connection {
         this.state = STATE.INIT;
     }
 
-    async heartbeat() {
+    heartbeat = async () => {
         Log("Sending heartbeat...", this.constructor.name, 4);
         const startTime = process.hrtime();
         await this.send('version', null, {
@@ -174,26 +160,26 @@ export default class Connection {
         }
     }
 
-    onError(e: Error) {
+    onError = (e: Error) => {
         Log(`${e}`, this.constructor.name, 1);
     }
 
-    onLookup() {
-        Log(`event:lookup ${JSON.stringify(arguments)}`, this.constructor.name, 5);
+    onLookup = () => {
+        Log(`event:lookup`, this.constructor.name, 5);
     }
 
-    onTimeout() {
-        Log(`event:timeout ${JSON.stringify(arguments)}`, this.constructor.name, 5);
+    onTimeout = () => {
+        Log(`event:timeout`, this.constructor.name, 5);
     }
 
-    onClose(hadError: boolean) {
+    onClose = (hadError: boolean) => {
         this.state = STATE.CLOSED;
         Log("Closing connection...", this.constructor.name, hadError ? 1 : 3);
         if (this.pingTimer) {
             clearInterval(this.pingTimer);
         }
     }
-    onData(data: Buffer) {
+    onData = (data: Buffer) => {
         const msg = data.toString('utf8');
 
         if (this.state === STATE.INIT) {
@@ -297,7 +283,7 @@ export default class Connection {
         // TODO: change how we log this, should be opt-in if we should log to level 3
         let logLevel = this.commandQueue.getCommand().options.noOutput ? 5 : 4;
         Log(`writeRaw(${data.replace("\r\n", "\\r\\n")})`, this.constructor.name, logLevel);
-        this.connection.write(Buffer.from(data, 'utf8'));
+        this.socket.write(Buffer.from(data, 'utf8'));
     }
 
     writeToConnection(data: string) {

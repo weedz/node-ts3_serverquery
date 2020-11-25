@@ -16,21 +16,35 @@ type AllowedPluginEvents =
 
 export default class Client {
     connection: Connection;
-    plugins: Map<string, PluginObject<Plugin>>;
+    plugins: Map<string, PluginObject<Plugin>> = new Map();
     config: BotConfig;
-    commands: object;
-    inited: boolean;
-    me: TS_whoami;
+    commands: unknown = {};
+    inited: boolean = false;
+    // Should be {null} or something similiar until we get whoami from server
+    me: TS_whoami = {
+        virtualserver_status: "",
+        virtualserver_id: 0,
+        virtualserver_unique_identifier: "",
+        virtualserver_port: 0,
+        client_id: 0,
+        client_channel_id: 0,
+        client_nickname: "",
+        client_database_id: 0,
+        client_login_name: "",
+        client_unique_identifier: "",
+        client_origin_server_id: 0
+    };
 
     constructor(connection: Connection, config: BotConfig) {
         this.connection = connection;
-        this.connection.connection.on('connect', () => {
-            this.broadcast("connected");
-        }).on('close', hadError => {
-            this.broadcast("disconnected", hadError);
-        });
+        this.config = config;
 
-        this.plugins = new Map();
+        this.connection.socketOn("connect", () => {
+            this.broadcast("connected");
+        });
+        this.connection.socketOn("close", (hadError) => {
+            this.broadcast("disconnected");
+        });
 
         PluginLoader<Plugin>(config.plugins, {
             api: {
@@ -45,25 +59,6 @@ export default class Client {
         }).then(plugins => {
             this.plugins = plugins;
         });
-
-        this.config = config;
-        this.commands = {};
-        this.inited = false;
-
-        // Should be {null} or something similiar until we get whoami from server
-        this.me = {
-            virtualserver_status: "",
-            virtualserver_id: 0,
-            virtualserver_unique_identifier: "",
-            virtualserver_port: 0,
-            client_id: 0,
-            client_channel_id: 0,
-            client_nickname: "",
-            client_database_id: 0,
-            client_login_name: "",
-            client_unique_identifier: "",
-            client_origin_server_id: 0
-        };
     }
     getSelf() {
         return this.me;

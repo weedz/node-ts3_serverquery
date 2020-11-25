@@ -26,7 +26,7 @@ async function init() {
     const client = new Client(connection, config);
     
     if (args.get("--init")) {
-        connection.connection.on("connect", () => {
+        connection.socketOn("connect", () => {
             client.init();
         });
     }
