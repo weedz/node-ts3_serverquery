@@ -2,12 +2,13 @@
   "name": "ts3_bot",
   "version": "0.1.0",
   "description": "A TS3 ServerQuery interface written in TypeScript",
-  "main": "index.ts",
+  "main": "dist/index.js",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
-    "start": "ts-node index.ts --config=config.json --init"
+    "start": "node dist/index.js --config=config.json --init",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -21,12 +22,13 @@
   },
   "homepage": "https://github.com/weedz/node-ts3_serverquery#readme",
   "dependencies": {
-    "@types/node": "^14.0.20",
-    "@types/semver": "^7.3.1",
-    "@weedzcokie/plugin-loader": "^2.3.0",
+    "@weedzcokie/plugin-loader": "file:../../../../PluginLoader",
     "chalk": "^4.1.0",
-    "semver": "^7.3.2",
-    "ts-node": "^9.0.0",
-    "typescript": "^4.1.2"
+    "semver": "^7.3.4"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.22",
+    "@types/semver": "^7.3.4",
+    "typescript": "^4.1.3"
   }
 }

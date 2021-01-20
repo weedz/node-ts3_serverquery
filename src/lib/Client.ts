@@ -16,7 +16,7 @@ type AllowedPluginEvents =
 
 export default class Client {
     connection: Connection;
-    plugins: Map<string, PluginObject<Plugin>> = new Map();
+    plugins: {[name: string]: PluginObject<Plugin>} = {};
     config: BotConfig;
     commands: unknown = {};
     inited: boolean = false;
@@ -46,12 +46,14 @@ export default class Client {
             this.broadcast("disconnected");
         });
 
+        const pluginsPath = path.resolve(__dirname, '../plugins');
+
         PluginLoader<Plugin>(config.plugins, {
             api: {
                 connection,
                 client: this,
             },
-            path: path.resolve('./plugins'),
+            path: pluginsPath,
             log: (str:string) => (Log(str, 'PluginLoader', 3)),
             handlers: {
                 default: NodeHandler
@@ -66,7 +68,7 @@ export default class Client {
     // Handle plugins
     broadcast(event: AllowedPluginEvents, params?: any) {
         Log(`Broadcasting '${chalk.yellow(event)}'`, this.constructor.name, 5);
-        for (const plugin of this.plugins.values()) {
+        for (const plugin of Object.values(this.plugins)) {
             this.notify(plugin.plugin, event, params);
         }
     }
@@ -89,11 +91,11 @@ export default class Client {
     }
     getPluginsStatus() {
         const plugins: { [pluginName: string] : { loaded?:boolean, version?:string|number } } = {};
-        for (let plugin of this.plugins.keys()) {
+        for (let plugin in this.plugins) {
             plugins[plugin] = {
                 loaded: true
             };
-            plugins[plugin].version = this.plugins.get(plugin)?.manifest.version.toString();
+            plugins[plugin].version = this.plugins[plugin]?.manifest.version.toString();
         }
         return plugins;
     }

@@ -1,8 +1,8 @@
 /.vscode/
-/config.json*
-/plugins/*
+/src/config.json*
+/src/plugins/*
 # CLI plugin is part of the main repository
-!/plugins/CLI/*
+!/src/plugins/CLI/*
 /node_modules/
 
 # typescript

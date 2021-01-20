@@ -1,11 +1,15 @@
 {
     "compilerOptions": {
-        "target": "esnext",
-        "module": "commonjs",
+        "target": "ESNext",
+        "module": "CommonJS",
         "moduleResolution": "node",
         "strict": true,
         "resolveJsonModule": true,
         "removeComments": true,
         "outDir": "./dist"
-    }
+    },
+    "include": [
+        "src",
+        "src/plugins/**/*.json",
+    ]
 }

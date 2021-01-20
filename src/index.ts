@@ -8,7 +8,7 @@ for (let argv of process.argv.splice(2)) {
     args.set(key, value !== undefined ? value : true);
 }
 
-async function init() {
+(async() => {
     let config;
     if (args.has("--config")) {
         const configFile = args.get("--config");
@@ -30,6 +30,4 @@ async function init() {
             client.init();
         });
     }
-}
-
-init();
+})();
