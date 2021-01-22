@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "node dist/index.js --config=config.json --init",
+    "start:ts": "ts-node src/index.ts --config=config.json --init",
     "build": "tsc"
   },
   "repository": {
@@ -22,7 +23,7 @@
   },
   "homepage": "https://github.com/weedz/node-ts3_serverquery#readme",
   "dependencies": {
-    "@weedzcokie/plugin-loader": "file:../../../../PluginLoader",
+    "@weedzcokie/plugin-loader": "^3.0.0-alpha.2",
     "chalk": "^4.1.0",
     "semver": "^7.3.4"
   },
