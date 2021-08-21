@@ -6,6 +6,7 @@
         "strict": true,
         "resolveJsonModule": true,
         "removeComments": true,
+        "allowSyntheticDefaultImports": true,
         "outDir": "./dist"
     },
     "include": [
