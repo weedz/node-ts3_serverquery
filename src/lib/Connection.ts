@@ -1,7 +1,7 @@
 import {
     createConnection, Socket
 } from "net";
-import * as chalk from "chalk";
+import kleur from "kleur";
 import DataStore from "./Connection/DataStore";
 import CommandQueue from "./Connection/CommandQueue";
 import {
@@ -149,7 +149,7 @@ export default class Connection {
         if (params.id !== '0') {
             const command = this.commandQueue.getCommand();
             if (command) {
-                Log(`Command failed: ${chalk.yellow(command.commandStr)} ${JSON.stringify(command)}, ${JSON.stringify(params)}`, this.constructor.name, 2);
+                Log(`Command failed: ${kleur.yellow(command.commandStr)} ${JSON.stringify(command)}, ${JSON.stringify(params)}`, this.constructor.name, 2);
                 command.failed = true;
                 command.reject(params);
             }

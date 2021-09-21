@@ -1,8 +1,7 @@
-import * as path from "path";
 import Log from "./Log";
 import Connection from "./Connection";
 import PluginLoader, { PluginObject, NodeHandler } from "@weedzcokie/plugin-loader";
-import * as chalk from "chalk";
+import kleur from "kleur";
 import { TS_whoami } from "./Types/TeamSpeak";
 import { BotConfig } from "./Types/Config";
 import Plugin from "./Plugin";
@@ -16,11 +15,11 @@ type AllowedPluginEvents =
 
 export default class Client {
     connection: Connection;
-    plugins: {[name: string]: PluginObject<Plugin>} = {};
+    plugins: Record<string, PluginObject<Plugin>> = {};
     config: BotConfig;
     commands: unknown = {};
     inited: boolean = false;
-    // Should be {null} or something similiar until we get whoami from server
+    // Should be {null} or something similar until we get whoami from server
     me: TS_whoami = {
         virtualserver_status: "",
         virtualserver_id: 0,
@@ -39,22 +38,22 @@ export default class Client {
         this.connection = connection;
         this.config = config;
 
-        this.connection.socketOn("connect", () => {
+        this.connection.socketOn("connect", _ => {
             this.broadcast("connected");
         });
-        this.connection.socketOn("close", (hadError) => {
+        this.connection.socketOn("close", _hadError => {
             this.broadcast("disconnected");
         });
 
-        const pluginsPath = path.resolve(__dirname, '../plugins');
+        const pluginsPath = new URL("../plugins", import.meta.url);
 
         PluginLoader<Plugin>(config.plugins, {
             api: {
                 connection,
                 client: this,
             },
-            path: pluginsPath,
-            log: (str:string) => (Log(str, 'PluginLoader', 3)),
+            path: pluginsPath.pathname,
+            log: str => (Log(str, 'PluginLoader', 3)),
             handlers: {
                 default: NodeHandler
             }
@@ -67,13 +66,13 @@ export default class Client {
     }
     // Handle plugins
     broadcast(event: AllowedPluginEvents, params?: any) {
-        Log(`Broadcasting '${chalk.yellow(event)}'`, this.constructor.name, 5);
+        Log(`Broadcasting '${kleur.yellow(event)}'`, this.constructor.name, 5);
         for (const plugin of Object.values(this.plugins)) {
             this.notify(plugin.plugin, event, params);
         }
     }
     notify(plugin: any, event: AllowedPluginEvents, params?: any) {
-        Log(`Sending notification '${chalk.yellow(event)}' to ${chalk.cyan(plugin.constructor.name)}`, this.constructor.name, 5);
+        Log(`Sending notification '${kleur.yellow(event)}' to ${kleur.cyan(plugin.constructor.name)}`, this.constructor.name, 5);
         return new Promise<void>( (resolve, reject) => {
             let result = true;
             if (typeof plugin[event] === "function") {

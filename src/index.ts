@@ -13,13 +13,13 @@ for (let argv of process.argv.splice(2)) {
     if (args.has("--config")) {
         const configFile = args.get("--config");
         try {
-            config = await import(`./${configFile}`);
+            config = (await import(`./${configFile}`)).default;
         } catch (e) {
             console.error(`Cannot find config file '${configFile}'`);
             process.exit(1);
         }
     } else {
-        config = await import("./config.json");
+        config = (await import("./config.json")).default;
     }
     
     const connection = new Connection(config);
