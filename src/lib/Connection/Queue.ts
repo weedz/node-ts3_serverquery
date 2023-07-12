@@ -1,4 +1,4 @@
-import { Command } from "../Connection";
+import type { Command } from "../Connection.js";
 
 export default class Queue {
     queue: Command[];

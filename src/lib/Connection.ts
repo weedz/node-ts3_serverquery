@@ -2,16 +2,16 @@ import {
     createConnection, Socket
 } from "net";
 import kleur from "kleur";
-import DataStore from "./Connection/DataStore";
-import CommandQueue from "./Connection/CommandQueue";
+import DataStore from "./Connection/DataStore.js";
+import CommandQueue from "./Connection/CommandQueue.js";
 import {
     parseArgsToString,
     parseParams
-} from "./Connection/Utils";
-import Log from "./Log";
-import { TSCommandList, TSReturnValue } from './commands';
-import { BotConfig } from "./Types/Config";
-import valid_events, { ValidEvents, EventHooks, ValidHooks } from "./Connection/valid_events";
+} from "./Connection/Utils.js";
+import Log from "./Log.js";
+import type { TSCommandList, TSReturnValue } from './commands.js';
+import type { BotConfig } from "./Types/Config.js";
+import valid_events, { ValidEvents, type EventHooks, ValidHooks } from "./Connection/valid_events.js";
 
 
 type CommandOptions = {

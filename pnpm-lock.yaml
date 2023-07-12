@@ -1,64 +1,68 @@
-lockfileVersion: 5.3
+lockfileVersion: '6.0'
 
-specifiers:
-  '@types/node': ^16.9.6
-  '@types/semver': ^7.3.8
-  '@weedzcokie/plugin-loader': ^3.0.9
-  kleur: ^4.1.4
-  typescript: ^4.4.3
+settings:
+  autoInstallPeers: false
+  excludeLinksFromLockfile: false
 
 dependencies:
-  '@weedzcokie/plugin-loader': 3.0.9
-  kleur: 4.1.4
+  '@weedzcokie/plugin-loader':
+    specifier: ^3.0.16
+    version: 3.0.16
+  kleur:
+    specifier: ^4.1.5
+    version: 4.1.5
 
 devDependencies:
-  '@types/node': 16.9.6
-  '@types/semver': 7.3.8
-  typescript: 4.4.3
+  '@types/node':
+    specifier: ^16.18.38
+    version: 16.18.38
+  typescript:
+    specifier: ^4.9.5
+    version: 4.9.5
 
 packages:
 
-  /@types/node/16.9.6:
-    resolution: {integrity: sha512-YHUZhBOMTM3mjFkXVcK+WwAcYmyhe1wL4lfqNtzI0b3qAy7yuSetnM7QJazgE5PFmgVTNGiLOgRFfJMqW7XpSQ==}
+  /@types/node@16.18.38:
+    resolution: {integrity: sha512-6sfo1qTulpVbkxECP+AVrHV9OoJqhzCsfTNp5NIG+enM4HyM3HvZCO798WShIXBN0+QtDIcutJCjsVYnQP5rIQ==}
     dev: true
 
-  /@types/semver/7.3.8:
-    resolution: {integrity: sha512-D/2EJvAlCEtYFEYmmlGwbGXuK886HzyCc3nZX/tkFTQdEU8jZDAgiv08P162yB17y4ZXZoq7yFAnW4GDBb9Now==}
-    dev: true
-
-  /@weedzcokie/plugin-loader/3.0.9:
-    resolution: {integrity: sha512-JDu/cOY7kWZzvnV9xuEUeFZiUepb+KgGcoU5fo9lmeJdrzz1ljPJoC+DOa8GVBIuAVtFdqK17D3LAXiG+hQxMg==}
+  /@weedzcokie/plugin-loader@3.0.16:
+    resolution: {integrity: sha512-coz8IpqLTzsRKhdUhLCHUJGa43jSJ+zcCPDJUBG5ZAu+7NVGKjqsZcUEB3avIBXFuhZFvMPfVEm7b6wBZGEXaw==}
     dependencies:
-      kleur: 4.1.4
-      semver: 7.3.5
+      colorette: 2.0.20
+      semver: 7.5.4
     dev: false
 
-  /kleur/4.1.4:
-    resolution: {integrity: sha512-8QADVssbrFjivHWQU7KkMgptGTl6WAcSdlbBPY4uNF+mWr6DGcKrvY2w4FQJoXch7+fKMjj0dRrL75vk3k23OA==}
+  /colorette@2.0.20:
+    resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
+    dev: false
+
+  /kleur@4.1.5:
+    resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
     dev: false
 
-  /lru-cache/6.0.0:
+  /lru-cache@6.0.0:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
     engines: {node: '>=10'}
     dependencies:
       yallist: 4.0.0
     dev: false
 
-  /semver/7.3.5:
-    resolution: {integrity: sha512-PoeGJYh8HK4BTO/a9Tf6ZG3veo/A7ZVsYrSA6J8ny9nb3B1VrpkuN+z9OE5wfE5p6H4LchYZsegiQgbJD94ZFQ==}
+  /semver@7.5.4:
+    resolution: {integrity: sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA==}
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
       lru-cache: 6.0.0
     dev: false
 
-  /typescript/4.4.3:
-    resolution: {integrity: sha512-4xfscpisVgqqDfPaJo5vkd+Qd/ItkoagnHpufr+i2QCHBsNYp+G7UAoyFl8aPtx879u38wPV65rZ8qbGZijalA==}
+  /typescript@4.9.5:
+    resolution: {integrity: sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==}
     engines: {node: '>=4.2.0'}
     hasBin: true
     dev: true
 
-  /yallist/4.0.0:
+  /yallist@4.0.0:
     resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}
     dev: false

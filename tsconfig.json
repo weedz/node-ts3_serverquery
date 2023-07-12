@@ -1,13 +1,14 @@
 {
     "compilerOptions": {
         "target": "ESNext",
-        "module": "ESNext",
-        "moduleResolution": "node",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
         "strict": true,
         "resolveJsonModule": true,
         "removeComments": true,
         "allowSyntheticDefaultImports": true,
-        "outDir": "./dist"
+        "outDir": "./dist",
+        "skipLibCheck": true
     },
     "include": [
         "src",

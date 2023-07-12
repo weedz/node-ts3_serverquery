@@ -1,10 +1,10 @@
-import Log from "./Log";
-import Connection from "./Connection";
-import PluginLoader, { PluginObject, NodeHandler } from "@weedzcokie/plugin-loader";
+import Log from "./Log.js";
+import Connection from "./Connection.js";
+import PluginLoader, { type PluginObject, NodeHandler } from "@weedzcokie/plugin-loader";
 import kleur from "kleur";
-import { TS_whoami } from "./Types/TeamSpeak";
-import { BotConfig } from "./Types/Config";
-import Plugin from "./Plugin";
+import type { TS_whoami } from "./Types/TeamSpeak.js";
+import type { BotConfig } from "./Types/Config.js";
+import type Plugin from "./Plugin.js";
 
 type AllowedPluginEvents = 
     |"init"

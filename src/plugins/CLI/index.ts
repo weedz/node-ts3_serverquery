@@ -1,6 +1,6 @@
-import Plugin from "../../lib/Plugin";
+import Plugin from "../../lib/Plugin.js";
 import { createInterface, Interface } from "readline";
-import { TSCommandList } from '../../lib/commands';
+import type { TSCommandList } from '../../lib/commands.js';
 
 export default class CLI extends Plugin {
     commands: {[cmd:string]: any} = {};

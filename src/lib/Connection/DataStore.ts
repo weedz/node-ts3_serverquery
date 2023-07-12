@@ -1,6 +1,6 @@
-import { TSCommandList } from '../commands';
-import Connection from '../Connection';
-import Log from '../Log';
+import type { TSCommandList } from '../commands.js';
+import type Connection from '../Connection.js';
+import Log from '../Log.js';
 
 type ListCache = 
     |"clientlist"

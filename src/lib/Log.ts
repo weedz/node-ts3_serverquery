@@ -1,5 +1,5 @@
 import kleur from "kleur";
-import config from "../config.json";
+import config from "../config.json" assert {type: "json"};
 
 export enum LogLevels {
     CRITICAL = 0,

@@ -1,5 +1,5 @@
-import { ValidEvents } from "./Connection/valid_events";
-import { TS_InstanceProperties, TS_BindingSubsystem, TS_Flag, TS_VirtualServerProperties, TS_PermissionGroupDatabaseTypes, TS_ChannelProperties, TS_ClientProperties, TS_whoami } from "./Types/TeamSpeak";
+import { ValidEvents } from "./Connection/valid_events.js";
+import type { TS_InstanceProperties, TS_BindingSubsystem, TS_Flag, TS_VirtualServerProperties, TS_PermissionGroupDatabaseTypes, TS_ChannelProperties, TS_ClientProperties, TS_whoami } from "./Types/TeamSpeak.js";
 
 interface PermissionParam {
     permvalue: number|string,

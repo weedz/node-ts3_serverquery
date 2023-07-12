@@ -1,6 +1,6 @@
-import Log from '../Log';
-import Queue from './Queue';
-import Connection, { Command } from '../Connection';
+import Log from '../Log.js';
+import Queue from './Queue.js';
+import Connection, { type Command } from '../Connection.js';
 
 export default class CommandQueue {
     currentCommand: Command;

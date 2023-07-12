@@ -1,4 +1,4 @@
-import { TSCommandList } from "../commands";
+import type { TSCommandList } from "../commands.js";
 
 export function parseArgsToString<K extends keyof TSCommandList>(cmd: K, args: TSCommandList[K]) {
     let str = cmd as string;

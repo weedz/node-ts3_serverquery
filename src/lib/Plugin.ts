@@ -1,7 +1,7 @@
 import * as fs from 'fs';
-import Log from './Log';
-import Connection from './Connection';
-import Client from './Client';
+import Log from './Log.js';
+import type Connection from './Connection.js';
+import type Client from './Client.js';
 import { PluginBase } from '@weedzcokie/plugin-loader';
 
 export type PluginApi = {
@@ -32,7 +32,7 @@ export async function loadConfig(configFile: string) {
     url.pathname = configFile;
     if (fs.existsSync(url)) {
         try {
-            return await import(configFile);
+            return await import(configFile, {assert: {type: "json"}});
         } catch (err) {
             Log(`Error reading config: ${err}`, "PluginHelper", 1);
         }
@@ -42,6 +42,6 @@ export async function loadConfig(configFile: string) {
     return {};
 }
 
-export function mergeConfig<T>(c1: T, c2: T) {
+export function mergeConfig<T extends {}>(c1: T, c2: T) {
     return Object.assign(c1, c2);
 }
