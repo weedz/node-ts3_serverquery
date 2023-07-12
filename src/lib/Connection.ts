@@ -1,17 +1,12 @@
-import {
-    createConnection, Socket
-} from "net";
-import kleur from "kleur";
-import DataStore from "./Connection/DataStore.js";
-import CommandQueue from "./Connection/CommandQueue.js";
-import {
-    parseArgsToString,
-    parseParams
-} from "./Connection/Utils.js";
-import Log from "./Log.js";
+import { createConnection, Socket } from "net";
+import { yellow } from "colorette";
 import type { TSCommandList, TSReturnValue } from './commands.js';
+import CommandQueue from "./Connection/CommandQueue.js";
+import DataStore from "./Connection/DataStore.js";
+import { parseArgsToString, parseParams } from "./Connection/Utils.js";
+import valid_events, { ValidEvents, ValidHooks, type EventHooks } from "./Connection/valid_events.js";
+import Log from "./Log.js";
 import type { BotConfig } from "./Types/Config.js";
-import valid_events, { ValidEvents, type EventHooks, ValidHooks } from "./Connection/valid_events.js";
 
 
 type CommandOptions = {
@@ -149,7 +144,7 @@ export default class Connection {
         if (params.id !== '0') {
             const command = this.commandQueue.getCommand();
             if (command) {
-                Log(`Command failed: ${kleur.yellow(command.commandStr)} ${JSON.stringify(command)}, ${JSON.stringify(params)}`, this.constructor.name, 2);
+                Log(`Command failed: ${yellow(command.commandStr)} ${JSON.stringify(command)}, ${JSON.stringify(params)}`, this.constructor.name, 2);
                 command.failed = true;
                 command.reject(params);
             }

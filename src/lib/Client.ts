@@ -1,10 +1,10 @@
-import Log from "./Log.js";
+import PluginLoader, { NodeHandler, type PluginObject } from "@weedzcokie/plugin-loader";
+import { cyan, yellow } from "colorette";
 import Connection from "./Connection.js";
-import PluginLoader, { type PluginObject, NodeHandler } from "@weedzcokie/plugin-loader";
-import kleur from "kleur";
-import type { TS_whoami } from "./Types/TeamSpeak.js";
-import type { BotConfig } from "./Types/Config.js";
+import Log from "./Log.js";
 import type Plugin from "./Plugin.js";
+import type { BotConfig } from "./Types/Config.js";
+import type { TS_whoami } from "./Types/TeamSpeak.js";
 
 type AllowedPluginEvents = 
     |"init"
@@ -66,13 +66,13 @@ export default class Client {
     }
     // Handle plugins
     broadcast(event: AllowedPluginEvents, params?: any) {
-        Log(`Broadcasting '${kleur.yellow(event)}'`, this.constructor.name, 5);
+        Log(`Broadcasting '${yellow(event)}'`, this.constructor.name, 5);
         for (const plugin of Object.values(this.plugins)) {
             this.notify(plugin.plugin, event, params);
         }
     }
     notify(plugin: any, event: AllowedPluginEvents, params?: any) {
-        Log(`Sending notification '${kleur.yellow(event)}' to ${kleur.cyan(plugin.constructor.name)}`, this.constructor.name, 5);
+        Log(`Sending notification '${yellow(event)}' to ${cyan(plugin.constructor.name)}`, this.constructor.name, 5);
         return new Promise<void>( (resolve, reject) => {
             let result = true;
             if (typeof plugin[event] === "function") {

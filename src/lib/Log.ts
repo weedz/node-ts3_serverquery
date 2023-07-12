@@ -1,5 +1,6 @@
-import kleur from "kleur";
-import config from "../config.json" assert {type: "json"};
+import { bold, cyan, green, magenta, red, underline, white, yellow, type Color } from "colorette";
+
+import config from "../config.json" assert { type: "json" };
 
 export enum LogLevels {
     CRITICAL = 0,
@@ -10,13 +11,13 @@ export enum LogLevels {
     DEBUG_ALL
 }
 
-const logLevelMap: {[loglevel:number]: kleur.Color} = {
-    0: kleur.bold().red().underline,
-    1: kleur.red,
-    2: kleur.yellow,
-    3: kleur.cyan,
-    4: kleur.magenta,
-    5: kleur.magenta
+const logLevelMap: {[loglevel in LogLevels]: Color} = {
+    0: str => bold(red(underline(str))),
+    1: red,
+    2: yellow,
+    3: cyan,
+    4: magenta,
+    5: magenta
 };
 const logLevelString: {[loglevel:number]: string} = {
     0: "CRITICAL",
@@ -40,8 +41,8 @@ export default function Log(str: string, identifier: string, level: LogLevels = 
         identifier = "LOG";
     }
 
-    let logMsg = `${kleur.white(new Date().toISOString())} [${logLevelMap[level](logLevelString[level])}]`;
-    logMsg += `: [${kleur.green(identifier)}]`;
+    let logMsg = `${white(new Date().toISOString())} [${logLevelMap[level](logLevelString[level])}]`;
+    logMsg += `: [${green(identifier)}]`;
     logMsg += `: ${str}\n`;
     process.stdout.write(logMsg);
 }
